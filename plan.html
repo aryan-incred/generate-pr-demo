@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLAN.md — MM-Epic-1-Story-1A</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0D1117; --surface: #161B22; --border: #21262D;
+    --text: #C9D1D9; --dim: #6E7681; --orange: #F5821E;
+    --blue: #58A6FF; --green: #3FB950; --yellow: #E3B341;
+    --red: #F85149; --purple: #BC8CFF; --code-bg: #1F2937;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size: 14px; }
+  body { background:var(--bg); color:var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; line-height:1.7; }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .doc-header .dh-left { display:flex; align-items:center; gap:14px; }
+  .doc-header .back-link {
+    color: var(--dim); text-decoration:none; font-size:12px;
+    padding: 4px 10px; border:1px solid var(--border); border-radius:5px;
+    transition: color .2s, border-color .2s;
+  }
+  .doc-header .back-link:hover { color:var(--text); border-color:#444d56; }
+  .doc-title { font-size:15px; font-weight:600; color:var(--text); }
+  .doc-meta  { font-size:11px; color:var(--dim); }
+  .status-badge {
+    padding: 3px 10px; border-radius:20px; font-size:11px; font-weight:600;
+    background: rgba(227,179,65,0.12); color:var(--yellow); border:1px solid rgba(227,179,65,0.3);
+  }
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    background: rgba(88,166,255,0.1); color: var(--blue);
+    border: 1px solid rgba(88,166,255,0.3); text-decoration: none;
+    transition: background .2s, border-color .2s;
+  }
+  .dl-btn:hover { background: rgba(88,166,255,0.2); border-color: rgba(88,166,255,0.5); }
+
+  /* ── LAYOUT ── */
+  .layout { display:flex; max-width:1200px; margin:0 auto; padding: 28px 20px; gap:28px; }
+  .toc {
+    width: 220px; flex-shrink:0; position:sticky; top:65px; height:fit-content;
+    background: var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px;
+  }
+  .toc-title { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); margin-bottom:10px; }
+  .toc a { display:block; font-size:12px; color:var(--dim); text-decoration:none; padding:4px 8px; border-radius:4px; margin-bottom:2px; transition:.15s; }
+  .toc a:hover { background: var(--border); color:var(--text); }
+  .toc a.section { color:var(--orange); font-weight:600; margin-top:8px; }
+  .content { flex:1; min-width:0; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--surface); border:1px solid var(--border); border-radius:10px;
+    margin-bottom:24px; overflow:hidden;
+  }
+  .section-card .sc-header {
+    padding: 14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-num {
+    background:var(--orange); color:#000; font-size:10px; font-weight:700;
+    width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  }
+  .section-title { font-size:14px; font-weight:700; color:var(--text); }
+  .section-body { padding: 20px; }
+
+  /* ── TYPOGRAPHY ── */
+  h3 { font-size:13px; font-weight:700; color:var(--blue); margin: 18px 0 8px; text-transform:uppercase; letter-spacing:.5px; }
+  h3:first-child { margin-top:0; }
+  p  { margin-bottom:10px; font-size:13px; color:var(--text); }
+  ul, ol { padding-left:20px; margin-bottom:10px; }
+  li { font-size:13px; margin-bottom:4px; }
+  li strong { color:var(--orange); }
+  strong { color:var(--text); }
+  code { font-family:'Courier New',monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:12px; color:var(--blue); }
+  .ac-list { list-style:none; padding:0; counter-reset:ac; }
+  .ac-list li { counter-increment:ac; display:flex; gap:10px; padding:5px 0; border-bottom:1px solid rgba(33,38,45,0.6); }
+  .ac-list li::before { content:counter(ac); color:var(--orange); font-weight:700; min-width:22px; font-size:12px; }
+  .ac-list li:last-child { border:none; }
+
+  /* ── TABLES ── */
+  .tbl-wrap { overflow-x:auto; margin:10px 0; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { background:var(--border); color:var(--text); padding:8px 12px; text-align:left; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.3px; }
+  td { padding:7px 12px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:top; }
+  tr:last-child td { border:none; }
+  tr:hover td { background:rgba(255,255,255,0.02); }
+  .badge-new    { background:rgba(63,185,80,0.12); color:var(--green); padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+  .badge-mod    { background:rgba(227,179,65,0.12); color:var(--yellow); padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+  .badge-reuse  { background:rgba(88,166,255,0.12); color:var(--blue); padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+  .check-y { color:var(--green); }
+  .check-n { color:var(--dim); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background:var(--code-bg); border:1px solid var(--border); border-radius:6px;
+    padding:14px 16px; overflow-x:auto; margin:10px 0; font-size:12px;
+    font-family:'Courier New',monospace; line-height:1.6; color:#A5D6FF;
+  }
+  pre .kw { color:#FF7B72; }
+  pre .str { color:#A5D6FF; }
+  pre .cmt { color:var(--dim); font-style:italic; }
+  pre .fn  { color:#D2A8FF; }
+
+  /* ── MERMAID ── */
+  .mermaid-wrap {
+    background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+    padding:20px; margin:10px 0; overflow-x:auto;
+  }
+  .mermaid { font-size:12px; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left:3px solid; padding:10px 14px; border-radius:0 6px 6px 0;
+    margin:10px 0; font-size:12px;
+  }
+  .callout.info  { border-color:var(--blue);   background:rgba(88,166,255,0.06); }
+  .callout.warn  { border-color:var(--yellow); background:rgba(227,179,65,0.06); }
+  .callout.green { border-color:var(--green);  background:rgba(63,185,80,0.06); }
+  .callout .cb-title { font-weight:700; margin-bottom:4px; }
+  .callout.info  .cb-title { color:var(--blue); }
+  .callout.warn  .cb-title { color:var(--yellow); }
+  .callout.green .cb-title { color:var(--green); }
+
+  /* ── APPROVAL GATE ── */
+  .gate-row { display:flex; gap:12px; margin:12px 0; }
+  .gate-card {
+    flex:1; border:1px solid var(--border); border-radius:8px; padding:14px;
+    background:var(--bg);
+  }
+  .gate-card .gc-name  { font-weight:700; font-size:13px; color:var(--text); }
+  .gate-card .gc-role  { font-size:11px; color:var(--dim); margin:3px 0; }
+  .gate-card .gc-status {
+    display:inline-block; margin-top:8px; padding:3px 10px; border-radius:12px;
+    font-size:11px; background:rgba(227,179,65,0.12); color:var(--yellow); border:1px solid rgba(227,179,65,0.3);
+  }
+
+  /* ── INFO ROW (implementation info) ── */
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .info-row { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; }
+  .ir-label { font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+  .ir-val   { font-size:13px; color:var(--text); font-family:'Courier New',monospace; }
+  .ir-val.orange { color:var(--orange); }
+  .ir-val.green  { color:var(--green); }
+
+  /* ── DIVIDER ── */
+  hr { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+  /* ── EDGE CASE LIST ── */
+  .edge-list { list-style:none; padding:0; }
+  .edge-list li { padding:5px 0 5px 20px; position:relative; font-size:13px; border-bottom:1px solid rgba(33,38,45,.5); }
+  .edge-list li::before { content:'→'; position:absolute; left:0; color:var(--orange); }
+  .edge-list li:last-child { border:none; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="dh-left">
+    <a href="index.html" class="back-link">← Demo</a>
+    <div>
+      <div class="doc-title">PLAN.md — MM-Epic-1-Story-1A</div>
+      <div class="doc-meta">Epic: MM-Epic-1 &nbsp;·&nbsp; Branch: feat/MM-Epic-1_CustomerPhotoAPI &nbsp;·&nbsp; Generated: 2026-06-25 &nbsp;·&nbsp; Author: Aryan Maurya</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="PLAN.md" download="PLAN.md" class="dl-btn">↓ Download PLAN.md</a>
+    <span class="status-badge">⏳ Pending Approval</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#sec1" class="section">Section 1 · PM Scope</a>
+    <a href="#story-summary">Story Summary</a>
+    <a href="#acs">Acceptance Criteria</a>
+    <a href="#oos">Out of Scope</a>
+    <a href="#edge">Edge Cases</a>
+    <a href="#demo-gate">Demo Gate</a>
+    <a href="#sec2" class="section">Section 2 · Technical</a>
+    <a href="#services">Services in Scope</a>
+    <a href="#interfaces">Interfaces</a>
+    <a href="#seq-diagram">Sequence Diagram</a>
+    <a href="#call-chain">Call Chain</a>
+    <a href="#doc-svc-patch">document-service Patch</a>
+    <a href="#files">Files Changed</a>
+    <a href="#sec3" class="section">Section 3 · QA</a>
+    <a href="#unit-tests">Unit Tests</a>
+    <a href="#integration">Integration Tests</a>
+    <a href="#regression">Regression</a>
+    <a href="#golden">Golden Data</a>
+    <a href="#impl-info" class="section">Impl Info</a>
+    <a href="#gate" class="section">Approval Gate</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ── SECTION 1 ── -->
+    <div class="section-card" id="sec1">
+      <div class="sc-header">
+        <div class="section-num">1</div>
+        <div class="section-title">PM Business Scope</div>
+      </div>
+      <div class="section-body">
+
+        <h3 id="story-summary">Story Summary</h3>
+        <p>Mobicule's mCollect app needs customer photos before doorstep visits. This story delivers an internal REST endpoint on <code>customer-service</code> that accepts a loan ID, finds all customers on that loan, and returns an array of <code>{ customerId, customerName, photoUrl, urlExpiresAt }</code> — where <code>photoUrl</code> is a time-limited pre-signed S3 URL (default 1 hour TTL, configurable). Only customers who have a verified photo (<code>PASSPORT_SIZE_PHOTOGRAPH_V2.0</code> or <code>PASSPORT_SIZE_VKYC_IMAGE_V2.0</code>) appear in the response. No API key authentication — this is an internal cluster endpoint.</p>
+
+        <hr>
+        <h3 id="acs">Acceptance Criteria (Binding)</h3>
+        <ol class="ac-list">
+          <li>Endpoint accepts a <code>loanId</code> and returns an array of customer photo records</li>
+          <li>Each record contains: <code>customerId</code>, <code>customerName</code>, <code>photoUrl</code>, <code>urlExpiresAt</code></li>
+          <li><code>photoUrl</code> is a pre-signed S3 URL valid for 1 hour (TTL configurable via <code>customerPhotoApi.presignedUrlTtlSeconds</code> — default 3600 seconds)</li>
+          <li><code>urlExpiresAt</code> is Unix epoch in milliseconds = <code>Date.now() + (ttlSeconds * 1000)</code></li>
+          <li>Only customers with a matching photo artifact appear in the response (customers without photos are silently omitted)</li>
+          <li>Photo match uses <code>DOC_TYPE.CODE</code>: <code>PASSPORT_SIZE_PHOTOGRAPH_V2.0</code> or <code>PASSPORT_SIZE_VKYC_IMAGE_V2.0</code></li>
+          <li>Requests missing <code>loanId</code> return HTTP 400 with service-standard error shape</li>
+          <li>Requests with invalid <code>loanId</code> format (empty string) return HTTP 400</li>
+          <li>When <code>loanId</code> has no customers: HTTP 404 with service-standard error shape</li>
+          <li>When all customers have no matching photo: return HTTP 200 with empty array <code>[]</code></li>
+          <li>All responses follow service-standard shape: <code>{ statusCode, status, message, response? }</code> — camelCase, no custom <code>error_code</code> field</li>
+          <li>Full response for a 2-customer loan completes within 3 seconds p95</li>
+        </ol>
+
+        <hr>
+        <h3 id="oos">Out of Scope</h3>
+        <ul>
+          <li>API key or token authentication (internal endpoint)</li>
+          <li>Returning raw image bytes (pre-signed URL only, no base64 payload)</li>
+          <li>Writing or updating customer photo records</li>
+          <li>Rate limiting or throttling</li>
+          <li>Paginating results</li>
+          <li>Any change to existing <code>/v1</code> or <code>/v2</code> customer-service routes</li>
+        </ul>
+
+        <hr>
+        <h3 id="edge">Business Edge Cases</h3>
+        <ul class="edge-list">
+          <li>Loan has 1 applicant + 1 co-applicant, both have photos → 2 items returned</li>
+          <li>Loan has 2 customers, only 1 has a photo → 1 item returned (no error)</li>
+          <li>Loan has 2 customers, neither has a photo → empty array <code>[]</code> (HTTP 200)</li>
+          <li>Extra unknown query params → silently ignored</li>
+          <li>Empty string <code>loanId</code> → HTTP 400</li>
+          <li>S3 presigned URL generation fails for one customer → omit that customer and continue (partial success acceptable for mCollect UX)</li>
+        </ul>
+
+        <hr>
+        <h3 id="demo-gate">Demo Gate</h3>
+        <div class="callout green">
+          <div class="cb-title">Validators: Ansuman Mishra (Sr. QA)</div>
+          <p><strong>Dataset:</strong> 1 loan with 2 customers both having photos &nbsp;·&nbsp; 1 loan where no customer has a photo (empty array) &nbsp;·&nbsp; 1 nonexistent loanId (404) &nbsp;·&nbsp; 1 missing loanId (400)</p>
+          <p><strong>Pass Criteria:</strong> multi-customer loan returns 2 records with valid photoUrls loadable in browser; <code>urlExpiresAt</code> is epoch ms ≈ now + 3600000; p95 under 3 seconds; empty-photo loan returns <code>[]</code>; error shapes follow service standard</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── SECTION 2 ── -->
+    <div class="section-card" id="sec2">
+      <div class="sc-header">
+        <div class="section-num">2</div>
+        <div class="section-title">Technical / Code Changes</div>
+      </div>
+      <div class="section-body">
+
+        <h3 id="services">Services in Scope</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Service</th><th>Type</th><th>Change Type</th></tr></thead>
+            <tbody>
+              <tr><td><code>customer-service</code></td><td>Microservice (TypeScript/Express)</td><td><span class="badge-new">Add</span> new route, controller, service</td></tr>
+              <tr><td><code>document-service</code></td><td>Microservice (Python/Flask)</td><td><span class="badge-mod">Modify</span> add optional <code>expires_in</code> to presigned URL endpoint</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;color:var(--dim)">dynamo-svc has no code changes — called via existing requestType pattern.</p>
+
+        <hr>
+        <h3 id="interfaces">Interface Changes</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Interface</th><th>Current</th><th>New Behaviour</th><th>Consumers Affected</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>GET /v1/customer/photo/:loanId</code></td>
+                <td><span style="color:var(--dim)">Does not exist</span></td>
+                <td>Returns array of <code>{ customerId, customerName, photoUrl, urlExpiresAt }</code></td>
+                <td>Mobicule mCollect (new)</td>
+              </tr>
+              <tr>
+                <td><code>POST /v1/file/get_signed_url</code></td>
+                <td><code>ExpiresIn</code> hardcoded to <code>max_expiry</code></td>
+                <td>Accepts optional <code>expires_in</code> (seconds); falls back to <code>max_expiry</code> if absent</td>
+                <td>customer-service (new caller) — existing callers unaffected</td>
+              </tr>
+              <tr>
+                <td><code>DocumentClientService</code></td>
+                <td><code>getZipFileBuffer</code>, <code>uploadToS3</code> only</td>
+                <td>+ <code>getPresignedUrl(key, bucket, ttlSeconds)</code> added</td>
+                <td>Only <code>CustomerPhotoService</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="seq-diagram">Sequence Diagram</h3>
+        <div class="mermaid-wrap">
+          <div class="mermaid">
+sequenceDiagram
+    participant MC as Mobicule mCollect
+    participant CS as customer-service
+    participant DY as dynamo-svc
+    participant DS as document-service
+    participant S3 as AWS S3 (inc-vkyc)
+
+    MC->>CS: GET /v1/customer/photo/:loanId
+
+    CS->>DY: GET_CUSTOMER_DETAILS_BY_LOAN_ID {LOAN_NO: loanId}
+    DY-->>CS: [{CUSTOMER_ID, CUSTOMER_NAME, ...}]
+
+    alt No customers returned
+        CS-->>MC: 404 {status: false, message: "Loan not found"}
+    end
+
+    par For each CUSTOMER_ID (Promise.all)
+        CS->>DY: GET_CUSTOMER_ARTIFACT {CUSTOMER_ID}
+        DY-->>CS: artifacts[]
+        Note over CS: filter DOC_TYPE.CODE ===<br/>"PASSPORT_SIZE_PHOTOGRAPH_V2.0"<br/>OR "PASSPORT_SIZE_VKYC_IMAGE_V2.0"
+        CS->>DS: POST /v1/file/get_signed_url {key, bucket:"inc-vkyc", expires_in:3600}
+        DS->>S3: generate_presigned_url(ExpiresIn=3600)
+        S3-->>DS: presigned URL
+        DS-->>CS: {success: true, url: "https://..."}
+    end
+
+    CS-->>MC: 200 {response: [{customerId, customerName, photoUrl, urlExpiresAt}]}
+          </div>
+        </div>
+
+        <hr>
+        <h3 id="call-chain">Call Chain Detail</h3>
+        <pre><span class="cmt">// Step 1 — resolve customers for this loan</span>
+dynamo-svc <span class="kw">POST</span> /endpoint
+{ requestType: <span class="str">"GET_CUSTOMER_DETAILS_BY_LOAN_ID"</span>,
+  request: { <span class="str">LOAN_NO</span>: loanId } }   <span class="cmt">// key is LOAN_NO, not LOAN_ID</span>
+→ [] → <span class="fn">404</span> { status: false, message: <span class="str">"Loan not found"</span> }
+→ [{ CUSTOMER_ID, CUSTOMER_NAME, PRIMARY_PHONE, ... }]
+
+<span class="cmt">// Step 2 — parallel for each CUSTOMER_ID (Promise.all)</span>
+dynamo-svc <span class="kw">POST</span> /endpoint
+{ requestType: <span class="str">"GET_CUSTOMER_ARTIFACT"</span>,
+  request: { CUSTOMER_ID: customerId } }
+→ filter: DOC_TYPE.CODE === <span class="str">"PASSPORT_SIZE_PHOTOGRAPH_V2.0"</span>
+        || DOC_TYPE.CODE === <span class="str">"PASSPORT_SIZE_VKYC_IMAGE_V2.0"</span>
+→ no match → omit customer (not an error)
+→ FILE_KEY: artifact.FILE_COLLECTION[0].FILE_KEY[0]   <span class="cmt">// FILE_KEY is an array</span>
+
+<span class="cmt">// Step 3 — generate presigned URL per photo customer</span>
+document-service <span class="kw">POST</span> /v1/file/get_signed_url
+{ key: FILE_KEY[0], bucket: <span class="str">"inc-vkyc"</span>,
+  expires_in: config.get(<span class="str">"customerPhotoApi.presignedUrlTtlSeconds"</span>) }
+→ failure → log + omit customer + continue
+
+urlExpiresAt = Date.now() + (ttlSeconds * <span class="fn">1000</span>)   <span class="cmt">// epoch ms
+
+// Response</span>
+{
+  statusCode: <span class="fn">200</span>, status: <span class="kw">true</span>,
+  message: <span class="str">"Request processed successfully"</span>,
+  response: [{ customerId, customerName, photoUrl, urlExpiresAt }]
+}</pre>
+
+        <hr>
+        <h3 id="doc-svc-patch">document-service Patch — Minimum Effort TTL Support</h3>
+        <div class="callout warn">
+          <div class="cb-title">2-line change — no existing callers affected</div>
+          <p>Current: <code>GET /v1/file/get_signed_url</code> ignores any TTL input; always uses <code>config_manager.get_timeouts()["max_expiry"]</code> (3600s default).</p>
+        </div>
+        <p><strong>api/utils/schema.py</strong> — add one optional field to <code>GetSignedUrlSchema</code>:</p>
+        <pre><span class="kw">class</span> <span class="fn">GetSignedUrlSchema</span>(Schema):
+    bucket     = fields.String(required=<span class="kw">True</span>, allow_none=<span class="kw">False</span>)
+    key        = fields.String(required=<span class="kw">True</span>)
+    action     = fields.String(validate=validate.OneOf([<span class="str">"view"</span>, <span class="str">"download"</span>]), required=<span class="kw">False</span>)
+    expires_in = fields.Integer(required=<span class="kw">False</span>, load_default=<span class="kw">None</span>)  <span class="cmt"># ADD THIS LINE</span></pre>
+        <p><strong>api/service/file_service.py</strong> — use <code>expires_in</code> if provided, else fall back:</p>
+        <pre><span class="cmt"># BEFORE</span>
+ExpiresIn=config_manager.get_timeouts()[<span class="str">"max_expiry"</span>],
+
+<span class="cmt"># AFTER</span>
+ExpiresIn=request.json.get(<span class="str">"expires_in"</span>) or config_manager.get_timeouts()[<span class="str">"max_expiry"</span>],</pre>
+
+        <hr>
+        <h3 id="files">Files to Create / Modify</h3>
+        <p style="font-size:12px;font-weight:700;color:var(--dim);margin-bottom:6px">customer-service</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Action</th><th>File Path</th><th>Reason</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge-new">CREATE</span></td><td><code>src/services/customerPhotoService.ts</code></td><td>Loan lookup → artifact filter → presigned URL</td></tr>
+              <tr><td><span class="badge-new">CREATE</span></td><td><code>src/controllers/customerPhotoController.ts</code></td><td>Handler for GET /v1/customer/photo/:loanId</td></tr>
+              <tr><td><span class="badge-new">CREATE</span></td><td><code>src/validations/customerPhotoValidator.ts</code></td><td>loanId path param validator</td></tr>
+              <tr><td><span class="badge-new">CREATE</span></td><td><code>test/customerPhoto.test.ts</code></td><td>Unit + integration tests (15 tests)</td></tr>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>src/services/documentClientService.ts</code></td><td>Add <code>getPresignedUrl()</code> method</td></tr>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>src/controllers/index.ts</code></td><td>Export new controller + service instances</td></tr>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>src/routes/index.ts</code></td><td>Register GET /v1/customer/photo/:loanId</td></tr>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>config/default.json</code></td><td>Add <code>customerPhotoApi.presignedUrlTtlSeconds: 3600</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;font-weight:700;color:var(--dim);margin:14px 0 6px">document-service</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Action</th><th>File Path</th><th>Reason</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>api/utils/schema.py</code></td><td>Add <code>expires_in</code> optional int to <code>GetSignedUrlSchema</code></td></tr>
+              <tr><td><span class="badge-mod">MODIFY</span></td><td><code>api/service/file_service.py</code></td><td>Use <code>expires_in</code> if provided, else fall back to <code>max_expiry</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── SECTION 3 ── -->
+    <div class="section-card" id="sec3">
+      <div class="sc-header">
+        <div class="section-num">3</div>
+        <div class="section-title">Multi-Service QA Scenarios</div>
+      </div>
+      <div class="section-body">
+
+        <h3 id="unit-tests">Unit Test Scenarios</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Scenario</th><th>Input</th><th>Expected Output</th><th>Edge?</th></tr></thead>
+            <tbody>
+              <tr><td>Loan with 2 customers, both have photos</td><td><code>loanId=APP001</code></td><td>HTTP 200, array length 2, <code>photoUrl</code> non-empty, <code>urlExpiresAt</code> ≈ now+3600000</td><td class="check-n">N</td></tr>
+              <tr><td>Loan with 1 customer having photo</td><td><code>loanId=APP002</code></td><td>HTTP 200, array length 1</td><td class="check-n">N</td></tr>
+              <tr><td>Loan found, no customer has photo</td><td><code>loanId=APP003</code></td><td>HTTP 200, response: <code>[]</code></td><td class="check-y">Y</td></tr>
+              <tr><td>Loan not found</td><td><code>loanId=UNKNOWN</code></td><td>HTTP 404, status: false</td><td class="check-n">N</td></tr>
+              <tr><td>Missing loanId param</td><td>no path param</td><td>HTTP 400, status: false</td><td class="check-n">N</td></tr>
+              <tr><td>Empty string loanId</td><td><code>loanId=</code></td><td>HTTP 400, status: false</td><td class="check-y">Y</td></tr>
+              <tr><td>Presigned URL fails for 1 of 2 customers</td><td><code>loanId=APP004</code></td><td>HTTP 200, array length 1 (partial success)</td><td class="check-y">Y</td></tr>
+              <tr><td>DOC_TYPE PASSPORT_SIZE_PHOTOGRAPH_V2.0</td><td>artifact with that code</td><td>customer included in response</td><td class="check-n">N</td></tr>
+              <tr><td>DOC_TYPE PASSPORT_SIZE_VKYC_IMAGE_V2.0</td><td>artifact with that code</td><td>customer included in response</td><td class="check-n">N</td></tr>
+              <tr><td>DOC_TYPE any other value</td><td>artifact with other code</td><td>customer omitted from response</td><td class="check-y">Y</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="integration">Integration Test Scenarios</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Scenario</th><th>Services Involved</th><th>Expected Behaviour</th><th>p95 Target</th></tr></thead>
+            <tbody>
+              <tr><td>Full retrieval — 2-customer loan</td><td>customer-service → dynamo-svc → document-service</td><td>HTTP 200, 2 records, photoUrls valid</td><td style="color:var(--green)">&lt;3000ms</td></tr>
+              <tr><td>Loan not found</td><td>customer-service → dynamo-svc</td><td>HTTP 404</td><td style="color:var(--green)">&lt;500ms</td></tr>
+              <tr><td>Loan found, no photos</td><td>customer-service → dynamo-svc</td><td>HTTP 200 <code>[]</code></td><td style="color:var(--green)">&lt;500ms</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="regression">Regression Scenarios</h3>
+        <ul class="edge-list">
+          <li><code>GET /v1/customer/documents/:id</code> — response shape unchanged</li>
+          <li><code>GET /v2/customer/documents/:id</code> — response shape unchanged</li>
+          <li><code>GET /v2/customer/artifacts/:id</code> — <code>GET_CUSTOMER_ARTIFACT</code> with MASK unchanged</li>
+          <li><code>document-service POST /v1/file/get_signed_url</code> without <code>expires_in</code> — continues to use <code>max_expiry</code>, no change</li>
+          <li><code>GET /metrics</code> on both services — Prometheus endpoint accessible</li>
+        </ul>
+
+        <hr>
+        <h3 id="golden">Golden Data for AI-Assisted Testing</h3>
+        <pre><span class="cmt">// Happy path (customer with VKYC photo)</span>
+loanId = <span class="str">"4624411239671012A"</span>
+GET_CUSTOMER_DETAILS_BY_LOAN_ID → [{ CUSTOMER_ID: <span class="str">"3504411239671016C"</span>, CUSTOMER_NAME: <span class="str">"John Doe"</span> }]
+GET_CUSTOMER_ARTIFACT → {
+  DOC_TYPE.CODE: <span class="str">"PASSPORT_SIZE_VKYC_IMAGE_V2.0"</span>,
+  FILE_COLLECTION[0].FILE_KEY[0]: <span class="str">"c8724aa695066911d75e2055114ec304/c0f3be9749aab03c0a13a9207e5e791e"</span>
+}
+get_signed_url → { success: <span class="kw">true</span>, url: <span class="str">"https://s3.ap-south-1.amazonaws.com/inc-vkyc/..."</span> }
+Expected: HTTP 200, urlExpiresAt = Date.now() + <span class="fn">3600000</span> ±5000ms
+
+<span class="cmt">// DOC_TYPE mismatch</span>
+DOC_TYPE.CODE = <span class="str">"PAN_CARD_V2.0"</span>  → customer omitted, response: []
+
+<span class="cmt">// Loan not found</span>
+GET_CUSTOMER_DETAILS_BY_LOAN_ID → null or []
+Expected: HTTP 404 { statusCode: <span class="fn">404</span>, status: <span class="kw">false</span>, message: <span class="str">"Loan not found"</span> }</pre>
+
+      </div>
+    </div>
+
+    <!-- ── IMPL INFO ── -->
+    <div class="section-card" id="impl-info">
+      <div class="sc-header">
+        <div class="section-title" style="margin-left:0">Implementation Info</div>
+      </div>
+      <div class="section-body">
+        <div class="info-grid">
+          <div class="info-row"><div class="ir-label">Base Branch</div><div class="ir-val orange">preprod</div></div>
+          <div class="info-row"><div class="ir-label">Story Branch</div><div class="ir-val">feat/MM-Epic-1_CustomerPhotoAPI</div></div>
+          <div class="info-row"><div class="ir-label">Test Command</div><div class="ir-val">NODE_ENV=preprod npm run test</div></div>
+          <div class="info-row"><div class="ir-label">Primary Owner</div><div class="ir-val">Aryan Maurya</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── APPROVAL GATE ── -->
+    <div class="section-card" id="gate">
+      <div class="sc-header">
+        <div class="section-title" style="margin-left:0">Approval Gate</div>
+      </div>
+      <div class="section-body">
+        <div class="callout warn">
+          <div class="cb-title">Both reviewers must approve before Phase 3 (TDD) begins</div>
+          <p>Phase 3 code generation is blocked until this PLAN.md is approved by both PM (Section 1) and Tech Lead (Section 2).</p>
+        </div>
+        <div class="gate-row">
+          <div class="gate-card">
+            <div class="gc-name">Souvik Nayek</div>
+            <div class="gc-role">PM — Business scope sign-off (Section 1)</div>
+            <span class="gc-status">⏳ Pending</span>
+          </div>
+          <div class="gate-card">
+            <div class="gc-name">Sunil Kumar</div>
+            <div class="gc-role">Tech Lead — Technical approach sign-off (Section 2)</div>
+            <span class="gc-status">⏳ Pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1F2937',
+      primaryTextColor: '#C9D1D9',
+      primaryBorderColor: '#374151',
+      lineColor: '#6B7280',
+      secondaryColor: '#111827',
+      tertiaryColor: '#1F2937',
+      background: '#0D1117',
+      mainBkg: '#161B22',
+      nodeBorder: '#374151',
+      clusterBkg: '#1F2937',
+      titleColor: '#F5821E',
+      edgeLabelBackground: '#1F2937',
+      actorBkg: '#161B22',
+      actorBorder: '#F5821E',
+      actorTextColor: '#C9D1D9',
+      actorLineColor: '#374151',
+      signalColor: '#C9D1D9',
+      signalTextColor: '#C9D1D9',
+      labelBoxBkgColor: '#1F2937',
+      labelBoxBorderColor: '#374151',
+      labelTextColor: '#C9D1D9',
+      loopTextColor: '#C9D1D9',
+      noteBorderColor: '#374151',
+      noteBkgColor: '#1F2937',
+      noteTextColor: '#C9D1D9',
+      activationBorderColor: '#F5821E',
+      activationBkgColor: 'rgba(245,130,30,0.1)',
+      sequenceNumberColor: '#0D1117'
+    },
+    sequence: { actorMargin: 60, messageMargin: 35, mirrorActors: false }
+  });
+</script>
+</body>
+</html>

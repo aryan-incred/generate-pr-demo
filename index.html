@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InCred MM · /generate-pr Pipeline Demo</title>
+<style>
+  :root {
+    --bg:       #0D1117;
+    --surface:  #161B22;
+    --border:   #21262D;
+    --text:     #C9D1D9;
+    --dim:      #6E7681;
+    --cmd:      #79C0FF;
+    --success:  #3FB950;
+    --error:    #F85149;
+    --warn:     #E3B341;
+    --orange:   #F5821E;
+    --blue:     #58A6FF;
+    --purple:   #BC8CFF;
+    --code:     #A5D6FF;
+    --pass:     #56D364;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; background:var(--bg); color:var(--text); font-family:'Courier New', 'Lucida Console', monospace; font-size:13px; overflow:hidden; }
+
+  /* ── HEADER ── */
+  #header {
+    height: 42px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    flex-shrink: 0;
+  }
+  #header .logo { color: var(--orange); font-weight: bold; font-size: 14px; letter-spacing: 0.5px; }
+  #header .logo span { color: var(--dim); font-weight: normal; }
+  #header .story-badge {
+    background: rgba(245,130,30,0.12);
+    border: 1px solid rgba(245,130,30,0.35);
+    color: var(--orange);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  #header .controls { color: var(--dim); font-size: 11px; }
+  #header .controls kbd {
+    background: var(--border);
+    border: 1px solid #3d444d;
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--text);
+    font-size: 10px;
+  }
+  #elapsed { color: var(--dim); font-size: 11px; margin-left: 12px; }
+
+  /* ── MAIN LAYOUT ── */
+  #main { display: flex; height: calc(100vh - 42px); }
+
+  /* ── TERMINAL ── */
+  #terminal-wrap {
+    flex: 0 0 64%;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #term-titlebar {
+    height: 30px;
+    background: #1C2128;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.red   { background: #FF5F57; }
+  .dot.yellow{ background: #FEBC2E; }
+  .dot.green { background: #28C840; }
+  #term-title { color: var(--dim); font-size: 11px; margin-left: 8px; }
+  #terminal {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 18px 14px 14px;
+    line-height: 1.65;
+    scroll-behavior: smooth;
+  }
+  #terminal::-webkit-scrollbar { width: 4px; }
+  #terminal::-webkit-scrollbar-track { background: transparent; }
+  #terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* Line types */
+  .line { white-space: pre-wrap; word-break: break-word; min-height: 1.65em; }
+  .line.blank { min-height: 0.7em; }
+  .line.cmd    { color: var(--cmd); }
+  .line.cmd::before { content: ''; }
+  .line.greeting { color: var(--orange); font-weight: bold; font-size: 14px; }
+  .line.heading  { color: var(--text); font-weight: bold; }
+  .line.phase-hdr {
+    color: var(--orange);
+    font-weight: bold;
+    font-size: 13px;
+    margin-top: 4px;
+    padding: 6px 0 4px;
+    border-bottom: 1px solid rgba(245,130,30,0.2);
+    margin-bottom: 2px;
+  }
+  .line.success  { color: var(--success); }
+  .line.error    { color: var(--error); }
+  .line.warn     { color: var(--warn); }
+  .line.info     { color: var(--blue); }
+  .line.dim      { color: var(--dim); }
+  .line.code     { color: var(--code); }
+  .line.option   { color: var(--text); }
+  .line.box      { color: #8B949E; }
+  .line.box-link { color: var(--blue); text-decoration: underline; }
+  .line a { color: inherit; text-decoration: underline; cursor: pointer; }
+  .line.viewlink { color: var(--purple); }
+  .line.viewlink a { color: var(--purple); font-weight: 600; }
+  .line.viewlink a:hover { color: #d0a8ff; }
+  .line.test-pass{ color: var(--pass); }
+  .line.test-fail{ color: var(--error); }
+  .line.big-pass { color: var(--pass); font-weight: bold; font-size: 14px; }
+  .line.table-hdr{ color: var(--dim); }
+  .line.table-hl { color: var(--pass); }
+  .line.output   { color: var(--text); }
+  .line.create   { color: #3FB950; }
+  .line.modify   { color: var(--warn); }
+  .line.check    { color: var(--success); }
+  .line.pending  { color: var(--warn); }
+  .line.next     { color: var(--purple); }
+  .line.orange   { color: var(--orange); font-weight: bold; }
+  .line.section  { color: var(--orange); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--text);
+    margin-left: 1px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── PHASE TRACK ── */
+  #sidebar {
+    flex: 0 0 36%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #sidebar-title {
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  #phase-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px;
+  }
+  .phase-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: all 0.35s ease;
+    background: var(--surface);
+    opacity: 0.45;
+  }
+  .phase-card.active {
+    opacity: 1;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 1px rgba(245,130,30,0.15), 0 0 12px rgba(245,130,30,0.08);
+  }
+  .phase-card.done {
+    opacity: 1;
+    border-color: rgba(63,185,80,0.4);
+    background: rgba(63,185,80,0.04);
+  }
+  .phase-card .ph-top { display: flex; align-items: center; gap: 8px; }
+  .ph-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    background: var(--border);
+    color: var(--dim);
+  }
+  .phase-card.active .ph-icon {
+    background: rgba(245,130,30,0.2);
+    color: var(--orange);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .phase-card.done .ph-icon {
+    background: rgba(63,185,80,0.2);
+    color: var(--success);
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,130,30,0.4); }
+    50%      { box-shadow: 0 0 0 4px rgba(245,130,30,0); }
+  }
+  .ph-title { font-size: 12px; font-weight: bold; color: var(--dim); flex: 1; }
+  .phase-card.active .ph-title { color: var(--text); }
+  .phase-card.done  .ph-title  { color: var(--success); }
+  .ph-time { font-size: 10px; color: var(--dim); }
+  .ph-desc { font-size: 10px; color: var(--dim); margin-top: 5px; line-height: 1.5; }
+  .phase-card.active .ph-desc { color: #8B949E; }
+  .phase-card.done  .ph-desc  { color: #4d8a55; }
+
+  /* ── METRICS ── */
+  #metrics {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  #metrics .m-title { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .metric-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 7px 10px;
+  }
+  .metric-box .m-val { font-size: 18px; font-weight: bold; color: var(--orange); }
+  .metric-box .m-lbl { font-size: 10px; color: var(--dim); margin-top: 1px; }
+  .metric-box.green .m-val { color: var(--success); }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange), #FF9A4A);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* ── SPLASH ── */
+  #splash {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 16px;
+    animation: fadeOut 0.6s ease 3.2s forwards;
+  }
+  @keyframes fadeOut { to { opacity:0; pointer-events:none; } }
+  #splash .s-logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--orange);
+    letter-spacing: 2px;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+  #splash .s-subtitle {
+    font-size: 15px;
+    color: var(--text);
+    animation: fadeUp 0.5s ease 0.6s both;
+  }
+  #splash .s-cmd {
+    font-size: 22px;
+    color: var(--cmd);
+    animation: fadeUp 0.5s ease 1.0s both;
+    border: 1px solid rgba(121,192,255,0.3);
+    padding: 8px 20px;
+    border-radius: 6px;
+    background: rgba(121,192,255,0.06);
+  }
+  #splash .s-story {
+    font-size: 12px;
+    color: var(--dim);
+    animation: fadeUp 0.5s ease 1.4s both;
+  }
+  #splash .s-hint {
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 20px;
+    animation: fadeUp 0.5s ease 2.4s both;
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+
+  /* ── FINAL SCREEN ── */
+  #final-screen {
+    display: none;
+    position: absolute;
+    inset: 42px 0 0 0;
+    background: var(--bg);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+    padding: 30px;
+  }
+  #final-screen.visible { display: flex; animation: fadeIn 0.8s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .f-title { font-size: 22px; font-weight: bold; color: var(--success); margin-bottom: 6px; }
+  .f-sub   { font-size: 13px; color: var(--dim); margin-bottom: 30px; }
+  .f-grid  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; width: 100%; max-width: 780px; margin-bottom: 28px; }
+  .f-card  {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .f-card .f-val { font-size: 28px; font-weight: bold; color: var(--orange); }
+  .f-card.g .f-val { color: var(--success); }
+  .f-card.b .f-val { color: var(--blue); }
+  .f-card .f-lbl { font-size: 11px; color: var(--dim); margin-top: 4px; }
+  .f-phases { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 780px; margin-bottom: 24px; }
+  .f-phase {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(63,185,80,0.05);
+    border: 1px solid rgba(63,185,80,0.2);
+    border-radius: 5px;
+    padding: 8px 14px;
+  }
+  .f-phase .fp-icon { color: var(--success); width: 20px; }
+  .f-phase .fp-name { flex:1; font-size: 12px; color: var(--text); }
+  .f-phase .fp-stat { font-size: 11px; color: var(--dim); }
+  .f-prs { display: flex; gap: 12px; width: 100%; max-width: 780px; }
+  .f-pr {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 11px;
+  }
+  .f-pr .pr-num  { color: var(--blue); font-weight: bold; font-size: 13px; }
+  .f-pr .pr-repo { color: var(--dim); margin: 2px 0 4px; }
+  .f-pr .pr-link { color: var(--blue); }
+  .f-hint { margin-top: 18px; color: var(--dim); font-size: 11px; }
+  .dl-row { display: flex; gap: 10px; margin-top: 14px; }
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    background: rgba(88,166,255,0.1); color: var(--blue);
+    border: 1px solid rgba(88,166,255,0.3); text-decoration: none;
+    transition: background .2s;
+  }
+  .dl-btn:hover { background: rgba(88,166,255,0.2); }
+
+  /* ── SCANLINE EFFECT (subtle) ── */
+  #terminal-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+    pointer-events: none;
+  }
+  #terminal-wrap { position: relative; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="s-logo">InCred<span style="color:#fff;font-weight:300"> MM</span></div>
+  <div class="s-subtitle">Agentic SDLC Pipeline · Money Movement Team</div>
+  <div class="s-cmd">$ /generate-pr</div>
+  <div class="s-story">MM-Epic-1-Story-1A &mdash; Customer Photo API for mCollect</div>
+  <div class="s-hint">Space = advance &nbsp;|&nbsp; F = fast-forward &nbsp;|&nbsp; R = restart</div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">InCred <span>MM &mdash;</span> /generate-pr <span>pipeline replay</span></div>
+  <div class="story-badge">MM-Epic-1-Story-1A · Customer Photo API</div>
+  <div style="display:flex;align-items:center">
+    <div class="controls">
+      <kbd>Space</kbd> advance &nbsp; <kbd>F</kbd> fast &nbsp; <kbd>R</kbd> restart
+    </div>
+    <div id="elapsed">00:00</div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- TERMINAL -->
+  <div id="terminal-wrap">
+    <div id="term-titlebar">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+      <div id="term-title">aryan@incred-mm — feat/MM-Epic-1_CustomerPhotoAPI</div>
+    </div>
+    <div id="terminal"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sidebar-title">Pipeline Status</div>
+    <div id="phase-list"></div>
+    <div id="metrics">
+      <div class="m-title">Session Metrics</div>
+      <div class="metric-grid">
+        <div class="metric-box green">
+          <div class="m-val" id="m-tests">0</div>
+          <div class="m-lbl">Tests passing</div>
+        </div>
+        <div class="metric-box">
+          <div class="m-val" id="m-files">0</div>
+          <div class="m-lbl">Files changed</div>
+        </div>
+        <div class="metric-box">
+          <div class="m-val" id="m-acs">0</div>
+          <div class="m-lbl">ACs validated</div>
+        </div>
+        <div class="metric-box green">
+          <div class="m-val" id="m-prs">0</div>
+          <div class="m-lbl">PRs raised</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL SCREEN -->
+<div id="final-screen">
+  <div class="f-title">✓ Pipeline Complete</div>
+  <div class="f-sub">MM-Epic-1-Story-1A &mdash; Customer Photo API &mdash; Ready for review</div>
+  <div class="f-grid">
+    <div class="f-card g"><div class="f-val">15/15</div><div class="f-lbl">Tests passing</div></div>
+    <div class="f-card">  <div class="f-val">9</div>    <div class="f-lbl">Files changed</div></div>
+    <div class="f-card g"><div class="f-val">287ms</div><div class="f-lbl">p95 latency (QA)</div></div>
+    <div class="f-card b"><div class="f-val">2</div>    <div class="f-lbl">PRs merged</div></div>
+  </div>
+  <div class="f-phases">
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 0 &mdash; Story Selection</div>       <div class="fp-stat">Branch auto-detected</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 1 &mdash; Requirements Gate</div>     <div class="fp-stat">11 ACs · 5 edge cases</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 2 &mdash; Technical Blueprint</div>   <div class="fp-stat">PLAN.md · Sequence diagram</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 3 &mdash; TDD Red</div>               <div class="fp-stat">15 failing tests committed</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 4 &mdash; TDD Green</div>             <div class="fp-stat">15/15 · 0 lint errors · 9 files</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 5 &mdash; Quality Gates</div>         <div class="fp-stat">Coverage · BUILD-EVIDENCE</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 6 &mdash; Pull Requests Raised</div>  <div class="fp-stat">PR #380 · PR #763</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 7 &mdash; PRs Merged</div>            <div class="fp-stat">Gate 2 cleared · merged to preprod</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 8 &mdash; QA Environment</div>        <div class="fp-stat">Integration · regression · p95 287ms</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 9 &mdash; Runway</div>                <div class="fp-stat">Smoke tests · p95 279ms · TL sign-off</div></div>
+    <div class="f-phase"><div class="fp-icon">✓</div><div class="fp-name">Phase 10 &mdash; Telemetry</div>            <div class="fp-stat">Slack #mm-pod · dashboard updated</div></div>
+  </div>
+  <div class="f-prs">
+    <div class="f-pr">
+      <div class="pr-num">PR #380</div>
+      <div class="pr-repo">customer-service · feat/MM-Epic-1_CustomerPhotoAPI → preprod</div>
+      <div>Reviewers: @gauravjain90 · @sunil-incred &nbsp;·&nbsp; Assignee: @aryan-incred</div>
+      <a href="https://github.com/Incred-Engineers/customer-service/pull/380" target="_blank" rel="noopener" class="pr-link" style="margin-top:4px;display:block">github.com/Incred-Engineers/customer-service/pull/380 ↗</a>
+    </div>
+    <div class="f-pr">
+      <div class="pr-num">PR #763</div>
+      <div class="pr-repo">document-service · feat/MM-Epic-1_CustomerPhotoAPI → preprod</div>
+      <div>Reviewer: @gauravjain90 &nbsp;·&nbsp; Assignee: @aryan-incred &nbsp;·&nbsp; Merge first</div>
+      <a href="https://github.com/Incred-Engineers/document-service/pull/763" target="_blank" rel="noopener" class="pr-link" style="margin-top:4px;display:block">github.com/Incred-Engineers/document-service/pull/763 ↗</a>
+    </div>
+  </div>
+  <div class="dl-row">
+    <a href="PLAN.md" download="PLAN.md" class="dl-btn">↓ PLAN.md</a>
+    <a href="BUILD-EVIDENCE.md" download="BUILD-EVIDENCE.md" class="dl-btn">↓ BUILD-EVIDENCE.md</a>
+  </div>
+  <div class="f-hint">Story fully shipped to Runway &nbsp;·&nbsp; Next: /mm-ship --prod &nbsp;|&nbsp; Press R to replay</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   PHASE DEFINITIONS
+══════════════════════════════════════════════════════ */
+const PHASES = [
+  { title:'Story Selection',  desc:'Branch detected · Story loaded' },
+  { title:'Requirements',     desc:'11 ACs validated · 5 edge cases' },
+  { title:'Blueprint',        desc:'PLAN.md · Sequence diagram · 2 resolved' },
+  { title:'TDD Red',          desc:'15 failing tests committed' },
+  { title:'TDD Green',        desc:'15/15 · 0 lint errors · 9 files' },
+  { title:'Quality Gates',    desc:'Coverage · BUILD-EVIDENCE.md' },
+  { title:'PRs Raised',       desc:'PR #380 · PR #763 → preprod' },
+  { title:'PRs Merged',       desc:'#380 + #763 merged · Gate 2 cleared' },
+  { title:'QA Environment',   desc:'Integration · regression · p95 287ms' },
+  { title:'Runway',           desc:'Smoke tests · p95 279ms · TL sign-off' },
+  { title:'Telemetry',        desc:'Slack #mm-pod · dashboard updated' },
+];
+
+/* ══════════════════════════════════════════════════════
+   SCENE DATA  (cls, text, pause-after-ms, charDelay)
+   cls values match CSS .line.XXX classes
+══════════════════════════════════════════════════════ */
+const SCENES = [
+  /* ─── SCENE 0: Story Selection ─── */
+  { phaseIdx: 0, metricUpdates: {}, autoAdvance: 2200, lines: [
+    { c:'cmd',      t:'$ /generate-pr', p:400, s:65 },
+    { c:'blank',    t:'', p:120 },
+    { c:'greeting', t:'  Hi Aryan — Backend Developer · Money Movement', p:250, s:18 },
+    { c:'blank',    t:'', p:100 },
+    { c:'dim',      t:'  Checking for active work on current branch...', p:350, s:12 },
+    { c:'success',  t:'  ✓ Branch detected: feat/MM-Epic-1_CustomerPhotoAPI', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'section',  t:'  MM-Epic-1 — Customer Photo API for mCollect', p:180, s:14 },
+    { c:'blank',    t:'', p:80 },
+    { c:'option',   t:'  [1]  MM-Epic-1-Story-1A   Ready — not started', p:120 },
+    { c:'dim',      t:'       Customer Photo API: auth, retrieval, error responses', p:250 },
+    { c:'blank',    t:'', p:300 },
+    { c:'success',  t:'  → Story 1A selected', p:0 },
+  ]},
+
+  /* ─── SCENE 1: Requirements Gate ─── */
+  { phaseIdx: 1, metricUpdates: { acs: 11 }, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ Phase 1 — Requirements Gate ━━━━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:100 },
+    { c:'dim',      t:'  Reading MM-Epic-1-Story-1A from branch...', p:350, s:12 },
+    { c:'blank',    t:'', p:80 },
+    { c:'info',     t:'  Story: Customer Photo API for mCollect', p:100 },
+    { c:'dim',      t:'  Author: Souvik Nayek · Size: 2pts · Status: Draft', p:180 },
+    { c:'blank',    t:'', p:120 },
+    { c:'heading',  t:'  Acceptance Criteria (11):', p:100 },
+    { c:'output',   t:'    1.  Endpoint accepts loanId as request parameter', p:60 },
+    { c:'output',   t:'    2.  Missing loanId → HTTP 400', p:60 },
+    { c:'output',   t:'    3.  Invalid loanId format (empty string) → HTTP 400', p:60 },
+    { c:'output',   t:'    4.  Valid loanId returns array of customer photo records', p:60 },
+    { c:'output',   t:'    5.  Each record: customerId, customerName, photoUrl, urlExpiresAt', p:60 },
+    { c:'output',   t:'    6.  photoUrl = pre-signed S3 URL (TTL configurable, default 1hr)', p:60 },
+    { c:'output',   t:'    7.  urlExpiresAt = epoch ms = Date.now() + (ttl × 1000)', p:60 },
+    { c:'output',   t:'    8.  Filter: PASSPORT_SIZE_PHOTOGRAPH_V2.0', p:60 },
+    { c:'output',   t:'              || PASSPORT_SIZE_VKYC_IMAGE_V2.0', p:60 },
+    { c:'output',   t:'    9.  Unknown loanId → HTTP 404', p:60 },
+    { c:'output',   t:'    10. Customers without photo silently omitted (partial OK)', p:60 },
+    { c:'output',   t:'    11. All responses: { statusCode, status, message } camelCase', p:150 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  Edge cases: 5 ✓   Compliance: none ✓   Demo gate: Ansuman Mishra', p:200 },
+    { c:'blank',    t:'', p:120 },
+    { c:'success',  t:'  Phase 1 ✅  11 ACs · 5 edge cases · No compliance flags', p:0 },
+  ]},
+
+  /* ─── SCENE 2: Blueprint ─── */
+  { phaseIdx: 2, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ Phase 2 — Technical Blueprint ━━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  Reading SERVICE-KB.md files...', p:300, s:12 },
+    { c:'success',  t:'  ✓ customer-service   (TypeScript / Express)', p:120 },
+    { c:'success',  t:'  ✓ document-service   (Python / Flask)', p:120 },
+    { c:'success',  t:'  ✓ DynamoDB/lib/lms/customer.js', p:250 },
+    { c:'blank',    t:'', p:120 },
+    { c:'dim',      t:'  Resolving technical unknowns...', p:250, s:12 },
+    { c:'blank',    t:'', p:60 },
+    { c:'warn',     t:'  ⚡ RESOLVE-IN-PLAN-1', p:120 },
+    { c:'dim',      t:'     GET_CUSTOMER_DETAILS_BY_LOAN_ID response shape?', p:180 },
+    { c:'code',     t:'     → DynamoDB/lib/lms/customer.js:1606', p:120 },
+    { c:'code',     t:'       SELECT CUSTOMER_ID, CUSTOMER_NAME', p:80 },
+    { c:'code',     t:'       FROM gcd_customer_m', p:80 },
+    { c:'code',     t:'       WHERE loan_no = ?   ← request key: LOAN_NO', p:180 },
+    { c:'success',  t:'     → RESOLVED: CUSTOMER_NAME included directly ✓', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'warn',     t:'  ⚡ RESOLVE-IN-PLAN-2', p:120 },
+    { c:'dim',      t:'     document-service TTL unit for get_signed_url?', p:180 },
+    { c:'code',     t:'     → config_manager.get_timeouts()["max_expiry"]', p:120 },
+    { c:'code',     t:'       default = 3600   # seconds ✓', p:120 },
+    { c:'code',     t:'     → 2-line patch: add expires_in optional field to schema', p:180 },
+    { c:'success',  t:'     → RESOLVED ✓', p:200 },
+    { c:'blank',    t:'', p:120 },
+    { c:'dim',      t:'  ┌─ Call Chain ─────────────────────────────────────────┐', p:60 },
+    { c:'dim',      t:'  │  mCollect → customer-service                         │', p:40 },
+    { c:'dim',      t:'  │    → dynamo-svc  [GET_CUSTOMER_DETAILS_BY_LOAN_ID]   │', p:40 },
+    { c:'dim',      t:'  │    ↓ parallel per customer (Promise.all):            │', p:40 },
+    { c:'dim',      t:'  │      → GET_CUSTOMER_ARTIFACT  [DOC_TYPE filter]      │', p:40 },
+    { c:'dim',      t:'  │      → document-service  [presigned URL + TTL]       │', p:40 },
+    { c:'dim',      t:'  │    ← [{ customerId, customerName,                    │', p:40 },
+    { c:'dim',      t:'  │         photoUrl, urlExpiresAt }]                    │', p:40 },
+    { c:'dim',      t:'  └──────────────────────────────────────────────────────┘', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'success',  t:'  PLAN.md committed ✓ (3 sections · sequence diagram · 2 resolved)', p:200 },
+    { c:'viewlink', t:'  📄 View full PLAN.md →', p:0, href:'plan.html' },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase 2 ✅  PLAN.md · Sequence diagram · 2 RESOLVE-IN-PLAN resolved', p:0 },
+  ]},
+
+  /* ─── SCENE 3: TDD Red ─── */
+  { phaseIdx: 3, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ Phase 3 — TDD Red ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  Writing test/customerPhoto.test.ts...', p:350, s:12 },
+    { c:'output',   t:'  11 controller-level tests', p:80 },
+    { c:'output',   t:'   4 service unit tests', p:100 },
+    { c:'dim',      t:'  ────────────────────', p:60 },
+    { c:'heading',  t:'  15 tests total', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'cmd',      t:'  $ NODE_ENV=preprod npm run test -- --testPathPattern=customerPhoto', p:300, s:30 },
+    { c:'blank',    t:'', p:300 },
+    { c:'error',    t:'  ● Test suite failed to run', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  test/customerPhoto.test.ts:13:3', p:80 },
+    { c:'error',    t:"    TS2724: 'CustomerPhotoControllerInstance'", p:60 },
+    { c:'error',    t:"            not exported from '../src/controllers'", p:200 },
+    { c:'blank',    t:'', p:60 },
+    { c:'dim',      t:'  test/customerPhoto.test.ts:14:3', p:80 },
+    { c:'error',    t:"    TS2724: 'CustomerPhotoServiceInstance'", p:60 },
+    { c:'error',    t:"            not exported from '../src/controllers'", p:200 },
+    { c:'blank',    t:'', p:60 },
+    { c:'dim',      t:'  test/customerPhoto.test.ts:572:30', p:80 },
+    { c:'error',    t:"    TS2307: Cannot find module", p:60 },
+    { c:'error',    t:"            '../src/services/customerPhotoService'", p:300 },
+    { c:'blank',    t:'', p:100 },
+    { c:'dim',      t:'  Test Suites:  1 failed  ← expected ✓', p:100 },
+    { c:'dim',      t:'  Tests:        0 total   ← expected ✓', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'success',  t:'  Red phase confirmed ✅', p:120 },
+    { c:'dim',      t:'  3 TS errors → 3 files to create in Phase 4', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase 3 ✅  15 failing tests committed (be09e48)', p:0 },
+  ]},
+
+  /* ─── SCENE 4: TDD Green ─── */
+  { phaseIdx: 4, metricUpdates: { tests: 15, files: 9 }, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ Phase 4 — Implementation (Green) ━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'create',   t:'  CREATE  src/services/customerPhotoService.ts', p:100 },
+    { c:'dim',      t:'          LOAN_NO → customer list · parallel artifacts ·', p:60 },
+    { c:'dim',      t:'          DOC_TYPE filter · FILE_KEY[0] → presigned URL', p:120 },
+    { c:'create',   t:'  CREATE  src/controllers/customerPhotoController.ts', p:80 },
+    { c:'create',   t:'  CREATE  src/validations/customerPhotoValidator.ts', p:120 },
+    { c:'modify',   t:'  MODIFY  src/services/documentClientService.ts  +getPresignedUrl()', p:80 },
+    { c:'modify',   t:'  MODIFY  src/controllers/index.ts              +2 instance exports', p:80 },
+    { c:'modify',   t:'  MODIFY  src/routes/index.ts                   +1 route', p:80 },
+    { c:'modify',   t:'  MODIFY  config/default.json                   +customerPhotoApi TTL', p:150 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  document-service patch:', p:80 },
+    { c:'modify',   t:'  MODIFY  api/utils/schema.py        +expires_in optional Integer', p:80 },
+    { c:'modify',   t:'  MODIFY  api/service/file_service.py  +request.json.get("expires_in") fallback', p:250 },
+    { c:'blank',    t:'', p:100 },
+    { c:'cmd',      t:'  $ NODE_ENV=preprod npm run test -- --testPathPattern=customerPhoto', p:280, s:30 },
+    { c:'blank',    t:'', p:280 },
+    { c:'test-pass',t:'  PASS  test/customerPhoto.test.ts', p:150 },
+    { c:'test-pass',t:'    ✓  2 customers, both have photos → 200, len 2            (1ms)', p:50 },
+    { c:'test-pass',t:'    ✓  1 customer with photo → 200, len 1', p:50 },
+    { c:'test-pass',t:'    ✓  Loan found, no photos → 200, []                       (1ms)', p:50 },
+    { c:'test-pass',t:'    ✓  Loan not found → 404', p:50 },
+    { c:'test-pass',t:'    ✓  Missing loanId → 400', p:50 },
+    { c:'test-pass',t:'    ✓  Empty string loanId → 400', p:50 },
+    { c:'test-pass',t:'    ✓  Presigned URL fails 1/2 → partial success             (1ms)', p:50 },
+    { c:'test-pass',t:'    ✓  Extra query params → 200 normal', p:50 },
+    { c:'test-pass',t:'    ✓  DOC_TYPE PASSPORT_SIZE_PHOTOGRAPH_V2.0 → included     (1ms)', p:50 },
+    { c:'test-pass',t:'    ✓  DOC_TYPE PASSPORT_SIZE_VKYC_IMAGE_V2.0 → included', p:50 },
+    { c:'test-pass',t:'    ✓  Other DOC_TYPE → omitted', p:50 },
+    { c:'test-pass',t:'    ✓  getCustomerPhotos: loan not found → 404               (1ms)', p:50 },
+    { c:'test-pass',t:'    ✓  getCustomerPhotos: null response → 404', p:50 },
+    { c:'test-pass',t:'    ✓  getPresignedUrl called with correct FILE_KEY + bucket', p:50 },
+    { c:'test-pass',t:'    ✓  urlExpiresAt ≈ Date.now() + (ttl × 1000)', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'big-pass', t:'  Tests:   15 passed, 15 total  ✅', p:120 },
+    { c:'success',  t:'  Lint:    0 errors, 1 warning (pre-existing, acceptable)  ✅', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase 4 ✅  15/15 tests · 0 lint errors · 9 files changed', p:0 },
+  ]},
+
+  /* ─── SCENE 5: Quality Gates ─── */
+  { phaseIdx: 5, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ Phase 5 — Quality Gates ━━━━━━━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  Coverage (implementation files):', p:200, s:12 },
+    { c:'blank',    t:'', p:60 },
+    { c:'table-hdr',t:'  File                          Stmts  Branch  Lines', p:60, s:0 },
+    { c:'dim',      t:'  ──────────────────────────── ─────── ─────── ───────', p:60, s:0 },
+    { c:'output',   t:'  customerPhotoController.ts    59.3%   54%     83%  ', p:80, s:0 },
+    { c:'output',   t:'  customerPhotoService.ts       73.4%   73%     91.9%', p:80, s:0 },
+    { c:'table-hl', t:'  customerPhotoValidator.ts     100%   100%    100%  ←', p:150, s:0 },
+    { c:'dim',      t:'  ──────────────────────────── ─────── ─────── ───────', p:100, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  All critical paths covered ✓', p:100 },
+    { c:'success',  t:'  p95 latency: ~400ms expected (1 SQL + parallel DynamoDB + presigned URL)', p:180 },
+    { c:'dim',      t:'  (measured on QA deployment via /mm-ship)', p:200 },
+    { c:'blank',    t:'', p:120 },
+    { c:'dim',      t:'  Writing BUILD-EVIDENCE.md...', p:280, s:12 },
+    { c:'dim',      t:'  → InCred-Product.../MM/Epic_Stories/', p:60 },
+    { c:'success',  t:'    MM-Epic-1_CustomerPhotoAPI/BUILD-EVIDENCE.md  ✓', p:200 },
+    { c:'viewlink', t:'  📋 View full BUILD-EVIDENCE.md →', p:0, href:'evidence.html' },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase 5 ✅  Tests ✓ · Lint ✓ · Coverage ✓ · BUILD-EVIDENCE ✓', p:0 },
+  ]},
+
+  /* ─── SCENE 6: PRs ─── */
+  { phaseIdx: 6, metricUpdates: { prs: 2 }, autoAdvance: 2000, lines: [
+    { c:'phase-hdr',t:'━━ Phase 6 — Pull Requests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  8-point sign-off:', p:100, s:12 },
+    { c:'check',    t:'  ✅ PLAN.md present on branch', p:60 },
+    { c:'check',    t:'  ✅ Sequence diagram in PLAN.md', p:60 },
+    { c:'check',    t:'  ✅ Service bindings in PLAN.md', p:60 },
+    { c:'check',    t:'  ✅ 15 failing tests → 15 green', p:60 },
+    { c:'check',    t:'  ✅ No skipped tests', p:60 },
+    { c:'check',    t:'  ✅ Function impact flags reviewed', p:60 },
+    { c:'check',    t:'  ✅ BUILD-EVIDENCE.md in monorepo', p:60 },
+    { c:'pending',  t:'  ⏳ QA-EVIDENCE.md — pending /mm-ship qa', p:200 },
+    { c:'blank',    t:'', p:100 },
+    { c:'dim',      t:'  Pushing branches...', p:250, s:12 },
+    { c:'success',  t:'  ✓  customer-service  feat/MM-Epic-1_CustomerPhotoAPI → origin', p:120 },
+    { c:'success',  t:'  ✓  document-service  feat/MM-Epic-1_CustomerPhotoAPI → origin', p:250 },
+    { c:'blank',    t:'', p:120 },
+    { c:'dim',      t:'  ┌─ PR #380 ────────────────────────────────────────────┐', p:60, s:0 },
+    { c:'dim',      t:'  │  customer-service                                    │', p:40, s:0 },
+    { c:'blue',     t:'  │  [MM-Epic-1-Story-1A] feat: Customer Photo API       │', p:40, s:0 },
+    { c:'dim',      t:'  │  feat/MM-Epic-1_CustomerPhotoAPI → preprod           │', p:40, s:0 },
+    { c:'dim',      t:'  │  Assignee:  @aryan-incred                            │', p:40, s:0 },
+    { c:'dim',      t:'  │  Reviewers: @gauravjain90 · @sunil-incred            │', p:40, s:0 },
+    { c:'box-link', t:'  │  github.com/Incred-Engineers/customer-service/pull/380│', p:120, s:0, href:'https://github.com/Incred-Engineers/customer-service/pull/380' },
+    { c:'dim',      t:'  └──────────────────────────────────────────────────────┘', p:160, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  ┌─ PR #763 ────────────────────────────────────────────┐', p:60, s:0 },
+    { c:'dim',      t:'  │  document-service  (merge first — no breaking change) │', p:40, s:0 },
+    { c:'blue',     t:'  │  [MM-Epic-1-Story-1A] feat: add expires_in TTL       │', p:40, s:0 },
+    { c:'dim',      t:'  │  feat/MM-Epic-1_CustomerPhotoAPI → preprod           │', p:40, s:0 },
+    { c:'dim',      t:'  │  Assignee:  @aryan-incred                            │', p:40, s:0 },
+    { c:'dim',      t:'  │  Reviewer:  @gauravjain90                            │', p:40, s:0 },
+    { c:'box-link', t:'  │  github.com/Incred-Engineers/document-service/pull/763│', p:120, s:0, href:'https://github.com/Incred-Engineers/document-service/pull/763' },
+    { c:'dim',      t:'  └──────────────────────────────────────────────────────┘', p:200, s:0 },
+    { c:'blank',    t:'', p:100 },
+    { c:'success',  t:'  Phase 6 ✅  2 PRs raised — Gate 2 pending peer review', p:120 },
+    { c:'blank',    t:'', p:80 },
+    { c:'next',     t:'  Next: /mm-ship --qa MM-Epic-1 MM-Epic-1-Story-1A', p:0 },
+  ]},
+
+  /* ─── SCENE 7: PRs Merged ─── */
+  { phaseIdx: 7, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ PRs Merged — Gate 2 Cleared ━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  document-service PR #763  (merged first)', p:150, s:12 },
+    { c:'success',  t:'  ✓ Sunil Kumar    reviewed & approved', p:80 },
+    { c:'success',  t:'  ✓ Gaurav Jain    reviewed & approved', p:80 },
+    { c:'check',    t:'  ✓ Merged to preprod  ·  2026-06-25', p:280 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  customer-service PR #380', p:150, s:12 },
+    { c:'success',  t:'  ✓ Sunil Kumar    reviewed & approved', p:80 },
+    { c:'success',  t:'  ✓ Gaurav Jain    reviewed & approved', p:80 },
+    { c:'check',    t:'  ✓ Merged to preprod  ·  2026-06-25', p:280 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Gate 2 ✅  Both PRs merged to preprod', p:0 },
+  ]},
+
+  /* ─── SCENE 8: /mm-ship --qa ─── */
+  { phaseIdx: 8, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ /mm-ship --qa · QA Environment ━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'cmd',      t:'  $ /mm-ship --qa MM-Epic-1 MM-Epic-1-Story-1A', p:280, s:30 },
+    { c:'blank',    t:'', p:250 },
+    { c:'dim',      t:'  Deploying feat/MM-Epic-1_CustomerPhotoAPI → qa-mm...', p:500, s:12 },
+    { c:'success',  t:'  ✓ Deployed to qa-mm environment', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'heading',  t:'  Unit tests:', p:60 },
+    { c:'test-pass',t:'  ✓  15 / 15 passing', p:150 },
+    { c:'blank',    t:'', p:60 },
+    { c:'heading',  t:'  Integration tests:', p:60 },
+    { c:'test-pass',t:'  ✓  GET /v1/customer/photo/4624411239671012A  → 200, 2 records', p:80 },
+    { c:'test-pass',t:'  ✓  GET /v1/customer/photo/UNKNOWN_LOAN       → 404 LOAN_NOT_FOUND', p:80 },
+    { c:'test-pass',t:'  ✓  GET /v1/customer/photo/NO_PHOTO_LOAN      → 200 []', p:150 },
+    { c:'blank',    t:'', p:60 },
+    { c:'heading',  t:'  Regression (existing endpoints):', p:60 },
+    { c:'test-pass',t:'  ✓  GET /v1/customer/documents/:id       — response shape unchanged', p:60 },
+    { c:'test-pass',t:'  ✓  GET /v2/customer/artifacts/:id       — MASK param unchanged', p:60 },
+    { c:'test-pass',t:'  ✓  POST /v1/file/get_signed_url (no expires_in) — TTL unchanged', p:60 },
+    { c:'test-pass',t:'  ✓  GET /metrics                         — Prometheus accessible', p:150 },
+    { c:'blank',    t:'', p:80 },
+    { c:'heading',  t:'  p95 latency  (2-customer loan · 50 samples):', p:60 },
+    { c:'dim',      t:'  ┌────────────────────────────────────────┐', p:40, s:0 },
+    { c:'output',   t:'  │  p50:   142ms                           │', p:40, s:0 },
+    { c:'output',   t:'  │  p90:   251ms                           │', p:40, s:0 },
+    { c:'success',  t:'  │  p95:   287ms  ✓  (target <3000ms)     │', p:40, s:0 },
+    { c:'output',   t:'  │  p99:   312ms                           │', p:40, s:0 },
+    { c:'dim',      t:'  └────────────────────────────────────────┘', p:250, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  All QA gates green ✅', p:120 },
+    { c:'dim',      t:'  Writing QA-EVIDENCE.md...', p:250, s:12 },
+    { c:'success',  t:'  → MM/Epic_Stories/MM-Epic-1_CustomerPhotoAPI/QA-EVIDENCE.md  ✓', p:120 },
+    { c:'viewlink', t:'  📋 View QA-EVIDENCE.md →', p:0, href:'qa-evidence.html' },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase QA ✅  15/15 · 3 integration · 4 regression · p95 287ms', p:0 },
+  ]},
+
+  /* ─── SCENE 9: /mm-ship --runway ─── */
+  { phaseIdx: 9, metricUpdates: {}, autoAdvance: null, lines: [
+    { c:'phase-hdr',t:'━━ /mm-ship --runway · Runway Environment ━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'cmd',      t:'  $ /mm-ship --runway MM-Epic-1 MM-Epic-1-Story-1A', p:280, s:30 },
+    { c:'blank',    t:'', p:250 },
+    { c:'dim',      t:'  Promoting qa-mm → runway environment...', p:500, s:12 },
+    { c:'success',  t:'  ✓ Deployed to runway', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'heading',  t:'  Smoke tests:', p:60 },
+    { c:'test-pass',t:'  ✓  GET /v1/customer/photo/:loanId  — endpoint accessible', p:80 },
+    { c:'test-pass',t:'  ✓  Missing loanId → 400  (input validation working)', p:80 },
+    { c:'test-pass',t:'  ✓  urlExpiresAt is epoch ms  ≈ now + 3600000', p:150 },
+    { c:'blank',    t:'', p:80 },
+    { c:'heading',  t:'  p95 latency  (runway · 50 samples):', p:60 },
+    { c:'dim',      t:'  ┌────────────────────────────────────────┐', p:40, s:0 },
+    { c:'output',   t:'  │  p50:   138ms                           │', p:40, s:0 },
+    { c:'output',   t:'  │  p90:   248ms                           │', p:40, s:0 },
+    { c:'success',  t:'  │  p95:   279ms  ✓  (target <3000ms)     │', p:40, s:0 },
+    { c:'dim',      t:'  └────────────────────────────────────────┘', p:250, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'heading',  t:'  Tech Lead sign-off:', p:60 },
+    { c:'success',  t:'  ✓ Sunil Kumar  @sunil.kumar  — Runway gate approved', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase Runway ✅  Smoke tests · p95 279ms · TL signed off', p:0 },
+  ]},
+
+  /* ─── SCENE 10: /mm-telemetry ─── */
+  { phaseIdx: 10, metricUpdates: {}, autoAdvance: 3500, lines: [
+    { c:'phase-hdr',t:'━━ /mm-telemetry · Phase 8 ━━━━━━━━━━━━━━━━━━━━━━', p:200, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'cmd',      t:'  $ /mm-telemetry MM-Epic-1-Story-1A', p:280, s:40 },
+    { c:'blank',    t:'', p:250 },
+    { c:'dim',      t:'  Generating Phase 8 telemetry...', p:350, s:12 },
+    { c:'blank',    t:'', p:100 },
+    { c:'dim',      t:'  ╔══════════════════════════════════════════════╗', p:40, s:0 },
+    { c:'orange',   t:'  ║  🚀  Story Shipped to Runway                ║', p:40, s:0 },
+    { c:'dim',      t:'  ╠══════════════════════════════════════════════╣', p:40, s:0 },
+    { c:'dim',      t:'  ║                                              ║', p:30, s:0 },
+    { c:'output',   t:'  ║  MM-Epic-1-Story-1A                          ║', p:30, s:0 },
+    { c:'dim',      t:'  ║  Customer Photo API  ·  Mobicule mCollect    ║', p:30, s:0 },
+    { c:'dim',      t:'  ║                                              ║', p:30, s:0 },
+    { c:'dim',      t:'  ║  📊 Metrics                                  ║', p:30, s:0 },
+    { c:'test-pass',t:'  ║    ✓ 15 / 15 tests passing                   ║', p:30, s:0 },
+    { c:'test-pass',t:'  ║    ✓ 0 lint errors                           ║', p:30, s:0 },
+    { c:'test-pass',t:'  ║    ✓ p95 QA:      287ms  (<3000ms target)    ║', p:30, s:0 },
+    { c:'test-pass',t:'  ║    ✓ p95 Runway:  279ms  (<3000ms target)    ║', p:30, s:0 },
+    { c:'test-pass',t:'  ║    ✓ 0 regressions across 4 endpoints        ║', p:30, s:0 },
+    { c:'dim',      t:'  ║                                              ║', p:30, s:0 },
+    { c:'dim',      t:'  ║  🔗 PR #380 (customer-service)               ║', p:30, s:0 },
+    { c:'dim',      t:'  ║     PR #763 (document-service)               ║', p:30, s:0 },
+    { c:'dim',      t:'  ║  👤 Aryan Maurya  ·  @aryan.maurya           ║', p:30, s:0 },
+    { c:'dim',      t:'  ║                                              ║', p:30, s:0 },
+    { c:'dim',      t:'  ╚══════════════════════════════════════════════╝', p:350, s:0 },
+    { c:'blank',    t:'', p:80 },
+    { c:'dim',      t:'  Posting to #mm-pod...', p:300, s:12 },
+    { c:'success',  t:'  ✓ Slack message sent to #mm-pod', p:150 },
+    { c:'dim',      t:'  Updating metrics dashboard...', p:300, s:12 },
+    { c:'success',  t:'  ✓ Dashboard updated', p:150 },
+    { c:'dim',      t:'  Flagging SERVICE-KB refresh...', p:200, s:12 },
+    { c:'warn',     t:'  → customer-service SERVICE-KB.md  needs delta update', p:80 },
+    { c:'warn',     t:'  → document-service SERVICE-KB.md  needs delta update', p:200 },
+    { c:'blank',    t:'', p:80 },
+    { c:'success',  t:'  Phase 8 ✅  Telemetry complete · Story shipped to Runway 🎉', p:0 },
+  ]},
+];
+
+/* ══════════════════════════════════════════════════════
+   ENGINE
+══════════════════════════════════════════════════════ */
+const term   = document.getElementById('terminal');
+const pList  = document.getElementById('phase-list');
+const bar    = document.getElementById('progress-bar');
+const elTime = document.getElementById('elapsed');
+
+let currentScene  = -1;
+let rendering     = false;
+let fastMode      = false;
+let stopRender    = false;
+let startTime     = null;
+let timerInterval = null;
+
+// Metrics
+const metrics = { tests: 0, files: 0, acs: 0, prs: 0 };
+
+function updateMetric(key, val) {
+  if (val === undefined) return;
+  metrics[key] = val;
+  const el = document.getElementById('m-' + key);
+  if (el) { el.textContent = val; }
+}
+
+/* ─── Build phase sidebar ─── */
+function buildSidebar() {
+  pList.innerHTML = '';
+  PHASES.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'phase-card';
+    card.id = 'phase-card-' + i;
+    card.innerHTML = `
+      <div class="ph-top">
+        <div class="ph-icon">${i}</div>
+        <div class="ph-title">${p.title}</div>
+        <div class="ph-time" id="ph-time-${i}"></div>
+      </div>
+      <div class="ph-desc">${p.desc}</div>`;
+    pList.appendChild(card);
+  });
+}
+
+function setPhaseActive(idx) {
+  document.querySelectorAll('.phase-card').forEach((c, i) => {
+    c.className = 'phase-card' + (i === idx ? ' active' : (i < idx ? ' done' : ''));
+    const iconEl = c.querySelector('.ph-icon');
+    if (i < idx) iconEl.textContent = '✓';
+    else if (i === idx) iconEl.textContent = '⟳';
+    else iconEl.textContent = i;
+  });
+  bar.style.width = (((idx + 1) / PHASES.length) * 100).toFixed(1) + '%';
+}
+
+function completePhase(idx, timeStr) {
+  const card = document.getElementById('phase-card-' + idx);
+  if (!card) return;
+  card.className = 'phase-card done';
+  const icon = card.querySelector('.ph-icon');
+  icon.textContent = '✓';
+  const timeEl = document.getElementById('ph-time-' + idx);
+  if (timeEl) timeEl.textContent = timeStr;
+}
+
+/* ─── Append a line to terminal ─── */
+async function appendLine(cls, text, charDelay, pauseAfter, href) {
+  if (stopRender) return;
+  const div = document.createElement('div');
+  div.className = 'line ' + cls;
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+
+  if (cls === 'blank') {
+    await sleep(fastMode ? 20 : pauseAfter || 40);
+    return;
+  }
+
+  const speed = fastMode ? 2 : (charDelay !== undefined ? charDelay : 16);
+  for (let i = 0; i < text.length; i++) {
+    if (stopRender) return;
+    div.textContent = text.slice(0, i + 1);
+    term.scrollTop = term.scrollHeight;
+    if (speed > 0) await sleep(speed);
+  }
+
+  // After typing: wrap in anchor if href provided
+  if (href) {
+    const a = document.createElement('a');
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = div.textContent;
+    div.textContent = '';
+    div.appendChild(a);
+  }
+
+  const wait = fastMode ? Math.min(pauseAfter || 40, 40) : (pauseAfter || 40);
+  await sleep(wait);
+  term.scrollTop = term.scrollHeight;
+}
+
+/* ─── Wait for spacebar or auto-advance ─── */
+let spaceResolve = null;
+function waitForSpace(autoMs) {
+  return new Promise(res => {
+    spaceResolve = res;
+    if (autoMs) setTimeout(res, fastMode ? autoMs * 0.15 : autoMs);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    if (spaceResolve) { spaceResolve(); spaceResolve = null; }
+  }
+  if (e.key === 'f' || e.key === 'F') { fastMode = !fastMode; }
+  if (e.key === 'r' || e.key === 'R') { location.reload(); }
+});
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, Math.max(0, ms)));
+}
+
+/* ─── Cursor ─── */
+let cursorEl = null;
+function showCursor() {
+  removeCursor();
+  cursorEl = document.createElement('span');
+  cursorEl.className = 'cursor';
+  const last = term.lastElementChild;
+  if (last) last.appendChild(cursorEl);
+}
+function removeCursor() {
+  if (cursorEl && cursorEl.parentNode) cursorEl.parentNode.removeChild(cursorEl);
+  cursorEl = null;
+}
+
+/* ─── Run a full scene ─── */
+async function runScene(sceneIdx) {
+  const scene = SCENES[sceneIdx];
+  setPhaseActive(scene.phaseIdx);
+
+  const tStart = Date.now();
+
+  for (const ln of scene.lines) {
+    if (stopRender) return;
+    await appendLine(ln.c, ln.t || '', ln.s, ln.p, ln.href);
+  }
+
+  // Update metrics
+  const mu = scene.metricUpdates || {};
+  Object.entries(mu).forEach(([k, v]) => updateMetric(k, v));
+
+  showCursor();
+  await waitForSpace(scene.autoAdvance);
+  removeCursor();
+
+  const elapsed = ((Date.now() - tStart) / 1000).toFixed(1) + 's';
+  completePhase(scene.phaseIdx, elapsed);
+  bar.style.width = (((scene.phaseIdx + 1) / PHASES.length) * 100).toFixed(1) + '%';
+
+  if (sceneIdx < SCENES.length - 1) {
+    await sleep(fastMode ? 200 : 600);
+    await appendLine('blank', '', 0, 0);
+  }
+}
+
+/* ─── Elapsed timer ─── */
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const s = Math.floor((Date.now() - startTime) / 1000);
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    elTime.textContent = m + ':' + sec;
+  }, 1000);
+}
+
+/* ─── Main ─── */
+async function main() {
+  buildSidebar();
+  await sleep(3400); // wait for splash to fade
+  startTimer();
+
+  for (let i = 0; i < SCENES.length; i++) {
+    if (stopRender) break;
+    currentScene = i;
+    await runScene(i);
+  }
+
+  // Final screen
+  clearInterval(timerInterval);
+  await sleep(fastMode ? 400 : 1200);
+  const fs = document.getElementById('final-screen');
+  fs.classList.add('visible');
+}
+
+main();
+</script>
+</body>
+</html>

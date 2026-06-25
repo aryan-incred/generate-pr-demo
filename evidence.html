@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUILD-EVIDENCE.md — MM-Epic-1-Story-1A</title>
+<style>
+  :root {
+    --bg:#0D1117; --surface:#161B22; --border:#21262D;
+    --text:#C9D1D9; --dim:#6E7681; --orange:#F5821E;
+    --blue:#58A6FF; --green:#3FB950; --yellow:#E3B341;
+    --red:#F85149; --purple:#BC8CFF; --code-bg:#1F2937;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;line-height:1.7;}
+
+  .doc-header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .dh-left{display:flex;align-items:center;gap:14px;}
+  .back-link{color:var(--dim);text-decoration:none;font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:5px;}
+  .back-link:hover{color:var(--text);}
+  .doc-title{font-size:15px;font-weight:600;}
+  .doc-meta{font-size:11px;color:var(--dim);}
+  .status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(63,185,80,0.12);color:var(--green);border:1px solid rgba(63,185,80,0.3);}
+  .dl-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(88,166,255,0.1);color:var(--blue);border:1px solid rgba(88,166,255,0.3);text-decoration:none;transition:.2s;}
+  .dl-btn:hover{background:rgba(88,166,255,0.2);border-color:rgba(88,166,255,0.5);}
+
+  .layout{display:flex;max-width:1100px;margin:0 auto;padding:28px 20px;gap:28px;}
+  .toc{width:200px;flex-shrink:0;position:sticky;top:65px;height:fit-content;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .toc-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:10px;}
+  .toc a{display:block;font-size:12px;color:var(--dim);text-decoration:none;padding:4px 8px;border-radius:4px;margin-bottom:2px;}
+  .toc a:hover{background:var(--border);color:var(--text);}
+  .toc a.section{color:var(--green);font-weight:600;margin-top:8px;}
+  .content{flex:1;min-width:0;}
+
+  /* ── PHASE CARDS ── */
+  .phase-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;}
+  .ph-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+  .ph-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+  .ph-badge.green{background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.3);}
+  .ph-badge.red{background:rgba(248,81,73,0.12);color:var(--red);border:1px solid rgba(248,81,73,0.25);}
+  .ph-title{font-size:14px;font-weight:700;}
+  .ph-body{padding:20px;}
+  .commit-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .commit-hash{font-family:'Courier New',monospace;background:var(--code-bg);color:var(--blue);padding:2px 8px;border-radius:4px;font-size:12px;text-decoration:none;}
+  .commit-hash:hover{text-decoration:underline;}
+  .commit-label{font-size:12px;color:var(--dim);}
+
+  /* ── FILE LISTS ── */
+  .file-group{margin-bottom:14px;}
+  .fg-title{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .file-item{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(33,38,45,.5);}
+  .file-item:last-child{border:none;}
+  .fi-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;min-width:46px;text-align:center;}
+  .fi-badge.create{background:rgba(63,185,80,0.12);color:var(--green);}
+  .fi-badge.modify{background:rgba(227,179,65,0.12);color:var(--yellow);}
+  .fi-path{font-family:'Courier New',monospace;font-size:12px;color:var(--text);}
+  .fi-desc{font-size:11px;color:var(--dim);margin-left:4px;}
+
+  /* ── TEST TABLE ── */
+  h3{font-size:13px;font-weight:700;color:var(--blue);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px;}
+  h3:first-child{margin-top:0;}
+  .tbl-wrap{overflow-x:auto;margin:8px 0;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:var(--border);color:var(--text);padding:8px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;}
+  td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;}
+  tr:last-child td{border:none;}
+  .pass-icon{color:var(--green);font-weight:bold;}
+  .fail-icon{color:var(--red);}
+
+  /* ── COVERAGE BARS ── */
+  .cov-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .cov-table th{background:var(--border);color:var(--text);padding:8px 12px;font-size:11px;text-transform:uppercase;font-weight:600;}
+  .cov-table td{padding:8px 12px;border-bottom:1px solid var(--border);}
+  .cov-table tr:last-child td{border:none;}
+  .cov-bar-wrap{width:80px;height:8px;background:var(--border);border-radius:4px;display:inline-block;margin-right:6px;vertical-align:middle;}
+  .cov-bar{height:100%;border-radius:4px;}
+  .cov-val{font-size:12px;font-family:'Courier New',monospace;}
+
+  /* ── CALLOUT ── */
+  .callout{border-left:3px solid;padding:10px 14px;border-radius:0 6px 6px 0;margin:10px 0;font-size:12px;}
+  .callout.green{border-color:var(--green);background:rgba(63,185,80,0.06);}
+  .callout.warn{border-color:var(--yellow);background:rgba(227,179,65,0.06);}
+  .callout.info{border-color:var(--blue);background:rgba(88,166,255,0.06);}
+  .callout .cb-title{font-weight:700;margin-bottom:4px;}
+  .callout.green .cb-title{color:var(--green);}
+  .callout.warn  .cb-title{color:var(--yellow);}
+  .callout.info  .cb-title{color:var(--blue);}
+
+  /* ── GATE CARD ── */
+  .gate-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:10px;}
+  .gc-name{font-weight:700;font-size:13px;}
+  .gc-role{font-size:11px;color:var(--dim);margin:3px 0;}
+  .gc-status{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:12px;font-size:11px;background:rgba(227,179,65,0.12);color:var(--yellow);border:1px solid rgba(227,179,65,0.3);}
+
+  code{font-family:'Courier New',monospace;background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:12px;color:var(--blue);}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:14px;overflow-x:auto;margin:8px 0;font-size:12px;font-family:'Courier New',monospace;line-height:1.6;color:#A5D6FF;}
+  hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  p{font-size:13px;margin-bottom:8px;}
+  ul{padding-left:20px;margin-bottom:8px;}
+  li{font-size:13px;margin-bottom:3px;}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+  /* ── METRIC ROW ── */
+  .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .metric-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+  .m-val{font-size:24px;font-weight:bold;color:var(--orange);}
+  .m-val.green{color:var(--green);}
+  .m-lbl{font-size:10px;color:var(--dim);margin-top:3px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="dh-left">
+    <a href="index.html" class="back-link">← Demo</a>
+    <div>
+      <div class="doc-title">BUILD-EVIDENCE.md — MM-Epic-1-Story-1A</div>
+      <div class="doc-meta">Story: Customer Photo API for mCollect &nbsp;·&nbsp; Branch: feat/MM-Epic-1_CustomerPhotoAPI &nbsp;·&nbsp; 2026-06-25</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="BUILD-EVIDENCE.md" download="BUILD-EVIDENCE.md" class="dl-btn">↓ Download BUILD-EVIDENCE.md</a>
+    <span class="status-badge">✓ Build Complete</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#metrics">Metrics</a>
+    <a href="#phase3" class="section">Phase 3 · TDD Red</a>
+    <a href="#phase4" class="section">Phase 4 · TDD Green</a>
+    <a href="#phase5" class="section">Phase 5 · QA Gates</a>
+    <a href="#tests">Tests 15/15</a>
+    <a href="#lint">Lint</a>
+    <a href="#coverage">Coverage</a>
+    <a href="#p95">p95 Latency</a>
+    <a href="#doc-svc" class="section">document-service</a>
+    <a href="#gate2" class="section">Gate 2</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- METRICS -->
+    <div id="metrics" class="metrics-row">
+      <div class="metric-box"><div class="m-val green">15/15</div><div class="m-lbl">Tests passing</div></div>
+      <div class="metric-box"><div class="m-val">0</div><div class="m-lbl">Lint errors</div></div>
+      <div class="metric-box"><div class="m-val">9</div><div class="m-lbl">Files changed</div></div>
+      <div class="metric-box"><div class="m-val green">2</div><div class="m-lbl">PRs raised</div></div>
+    </div>
+
+    <!-- ── PHASE 3 ── -->
+    <div class="phase-card" id="phase3">
+      <div class="ph-header">
+        <span class="ph-badge red">RED</span>
+        <div class="ph-title">Phase 3 — TDD Red</div>
+      </div>
+      <div class="ph-body">
+        <div class="commit-row">
+          <span class="commit-label">Commit:</span>
+          <a href="https://github.com/Incred-Engineers/customer-service/commit/be09e48" target="_blank" class="commit-hash">be09e48</a>
+          <span class="commit-label">test/customerPhoto.test.ts created</span>
+        </div>
+        <div class="callout info">
+          <div class="cb-title">Result: 15 tests failing as expected — Red phase confirmed ✓</div>
+          <p>3 TypeScript compile errors — implementation files absent at time of commit</p>
+        </div>
+        <h3>TS Compile Errors (Expected)</h3>
+        <pre>test/customerPhoto.test.ts:13:3
+  TS2724: 'CustomerPhotoControllerInstance'
+          not exported from '../src/controllers'
+
+test/customerPhoto.test.ts:14:3
+  TS2724: 'CustomerPhotoServiceInstance'
+          not exported from '../src/controllers'
+
+test/customerPhoto.test.ts:572:30
+  TS2307: Cannot find module
+          '../src/services/customerPhotoService'
+
+Test Suites: 1 failed  ← expected
+Tests:       0 total   ← expected</pre>
+      </div>
+    </div>
+
+    <!-- ── PHASE 4 ── -->
+    <div class="phase-card" id="phase4">
+      <div class="ph-header">
+        <span class="ph-badge green">GREEN</span>
+        <div class="ph-title">Phase 4 — TDD Green</div>
+      </div>
+      <div class="ph-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <a href="https://github.com/Incred-Engineers/customer-service/commit/d5aa180" target="_blank" class="commit-hash">d5aa180</a>
+          <a href="https://github.com/Incred-Engineers/customer-service/commit/a3c2ddf" target="_blank" class="commit-hash">a3c2ddf</a>
+          <a href="https://github.com/Incred-Engineers/customer-service/commit/6a0b437" target="_blank" class="commit-hash">6a0b437</a>
+        </div>
+
+        <div class="file-group">
+          <div class="fg-title">customer-service — files created</div>
+          <div class="file-item"><span class="fi-badge create">CREATE</span><span class="fi-path">src/services/customerPhotoService.ts</span></div>
+          <div class="file-item"><span class="fi-badge create">CREATE</span><span class="fi-path">src/controllers/customerPhotoController.ts</span></div>
+          <div class="file-item"><span class="fi-badge create">CREATE</span><span class="fi-path">src/validations/customerPhotoValidator.ts</span></div>
+        </div>
+        <div class="file-group">
+          <div class="fg-title">customer-service — files modified</div>
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">src/services/documentClientService.ts</span><span class="fi-desc">+getPresignedUrl()</span></div>
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">src/controllers/index.ts</span><span class="fi-desc">+CustomerPhotoServiceInstance, CustomerPhotoControllerInstance</span></div>
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">src/routes/index.ts</span><span class="fi-desc">+GET /v1/customer/photo/:loanId</span></div>
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">config/default.json</span><span class="fi-desc">+customerPhotoApi.presignedUrlTtlSeconds: 3600</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PHASE 5 ── -->
+    <div class="phase-card" id="phase5">
+      <div class="ph-header">
+        <span class="ph-badge green">QA GATES</span>
+        <div class="ph-title">Phase 5 — Quality Gates</div>
+      </div>
+      <div class="ph-body">
+
+        <h3 id="tests">Tests: 15 / 15 Passing</h3>
+        <div class="callout green">
+          <div class="cb-title">Run: NODE_ENV=preprod npm run test -- --testPathPattern="customerPhoto"</div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Test Case</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td>2 customers both have photos → HTTP 200, array length 2</td><td class="pass-icon">✅</td></tr>
+              <tr><td>1 customer has photo → HTTP 200, array length 1</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Loan found, no customer has photo → HTTP 200, response []</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Loan not found → HTTP 404 status false</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Missing loanId → HTTP 400 status false</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Empty string loanId → HTTP 400 status false</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Presigned URL fails for 1 of 2 → HTTP 200, array length 1 (partial success)</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Extra unknown query params → HTTP 200 normal response</td><td class="pass-icon">✅</td></tr>
+              <tr><td>DOC_TYPE PASSPORT_SIZE_PHOTOGRAPH_V2.0 → customer included</td><td class="pass-icon">✅</td></tr>
+              <tr><td>DOC_TYPE PASSPORT_SIZE_VKYC_IMAGE_V2.0 → customer included</td><td class="pass-icon">✅</td></tr>
+              <tr><td>DOC_TYPE other value → customer omitted</td><td class="pass-icon">✅</td></tr>
+              <tr><td>getCustomerPhotos: loan not found → 404 shape</td><td class="pass-icon">✅</td></tr>
+              <tr><td>getCustomerPhotos: null dynamo response → 404 shape</td><td class="pass-icon">✅</td></tr>
+              <tr><td>getPresignedUrl called with correct FILE_KEY and bucket inc-vkyc</td><td class="pass-icon">✅</td></tr>
+              <tr><td>urlExpiresAt = Date.now() + (ttlSeconds * 1000)</td><td class="pass-icon">✅</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="lint">Lint</h3>
+        <div class="callout green">
+          <div class="cb-title">0 errors ✓</div>
+          <p>Run: <code>npx eslint src/controllers/customerPhotoController.ts src/services/customerPhotoService.ts src/validations/customerPhotoValidator.ts --ext .ts</code></p>
+          <p>Result: 0 errors, 1 warning (<code>no-console</code> — pre-existing pattern in codebase, acceptable)</p>
+        </div>
+
+        <hr>
+        <h3 id="coverage">Coverage (New Files Only)</h3>
+        <div class="tbl-wrap">
+          <table class="cov-table">
+            <thead><tr><th>File</th><th>Statements</th><th>Branch</th><th>Functions</th><th>Lines</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>customerPhotoController.ts</code></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:59%;background:#E3B341;"></div></div><span class="cov-val">59.3%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:54%;background:#E3B341;"></div></div><span class="cov-val">54%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:84%;background:#3FB950;"></div></div><span class="cov-val">84%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:83%;background:#3FB950;"></div></div><span class="cov-val">83%</span></td>
+              </tr>
+              <tr>
+                <td><code>customerPhotoService.ts</code></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:73%;background:#3FB950;"></div></div><span class="cov-val">73.4%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:73%;background:#3FB950;"></div></div><span class="cov-val">73%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:87%;background:#3FB950;"></div></div><span class="cov-val">87%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:92%;background:#3FB950;"></div></div><span class="cov-val">91.9%</span></td>
+              </tr>
+              <tr>
+                <td><code>customerPhotoValidator.ts</code></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:100%;background:#3FB950;"></div></div><span class="cov-val" style="color:var(--green);font-weight:700;">100%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:100%;background:#3FB950;"></div></div><span class="cov-val" style="color:var(--green);font-weight:700;">100%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:100%;background:#3FB950;"></div></div><span class="cov-val" style="color:var(--green);font-weight:700;">100%</span></td>
+                <td><div class="cov-bar-wrap"><div class="cov-bar" style="width:100%;background:#3FB950;"></div></div><span class="cov-val" style="color:var(--green);font-weight:700;">100%</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;color:var(--dim);margin-top:6px">No coverage threshold defined in PLAN.md. All critical paths (happy path, 404, 400, partial success, DOC_TYPE filter) are exercised.</p>
+
+        <hr>
+        <h3 id="p95">p95 Latency</h3>
+        <div class="callout warn">
+          <div class="cb-title">Not measured — requires QA deployment</div>
+          <p>Target: &lt;3000ms for 2-customer loan (per PLAN.md Section 3).</p>
+          <p>Architecture supports it: 1 SQL query (~100ms) + parallel artifact fetches (~100ms) + parallel presigned URL calls (~200ms) = <strong>~400ms expected</strong>.</p>
+        </div>
+
+        <hr>
+        <h3>Regression</h3>
+        <div class="callout green">
+          <div class="cb-title">0 new failures ✓</div>
+          <p>Pre-existing failures in <code>test/index.test.ts</code>: 21 (unchanged — pre-existing env config issue unrelated to this change).</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── DOCUMENT-SERVICE ── -->
+    <div class="phase-card" id="doc-svc">
+      <div class="ph-header">
+        <span class="ph-badge green">PATCH</span>
+        <div class="ph-title">document-service — TTL Support</div>
+      </div>
+      <div class="ph-body">
+        <div class="commit-row">
+          <span class="commit-label">Repo: document-service &nbsp;·&nbsp; Commit:</span>
+          <a href="https://github.com/Incred-Engineers/document-service/commit/6ce9d7a" target="_blank" class="commit-hash">6ce9d7a</a>
+        </div>
+        <div class="file-group" style="margin-top:12px;">
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">api/utils/schema.py</span><span class="fi-desc">— expires_in optional Integer added to GetSignedUrlSchema</span></div>
+          <div class="file-item"><span class="fi-badge modify">MODIFY</span><span class="fi-path">api/service/file_service.py</span><span class="fi-desc">— ExpiresIn uses request.json.get("expires_in") or max_expiry fallback</span></div>
+        </div>
+        <div class="callout green" style="margin-top:10px;">
+          <div class="cb-title">Existing callers unaffected ✓</div>
+          <p><code>expires_in</code> is optional with <code>load_default=None</code>. Callers that omit it continue to receive <code>max_expiry</code> — no behaviour change.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GATE 2 ── -->
+    <div class="phase-card" id="gate2">
+      <div class="ph-header">
+        <span class="ph-badge" style="background:rgba(227,179,65,0.15);color:var(--yellow);border:1px solid rgba(227,179,65,0.3);">GATE 2</span>
+        <div class="ph-title">Peer Review Required</div>
+      </div>
+      <div class="ph-body">
+        <div class="callout warn">
+          <div class="cb-title">Phase 5 (/mm-ship qa) is blocked until Gate 2 is approved</div>
+          <p>PRs: <a href="https://github.com/Incred-Engineers/customer-service/pull/380" target="_blank" style="color:var(--blue)">customer-service #380</a> &nbsp;·&nbsp; <a href="https://github.com/Incred-Engineers/document-service/pull/763" target="_blank" style="color:var(--blue)">document-service #763</a></p>
+        </div>
+        <div class="gate-card">
+          <div class="gc-name">Sunil Kumar</div>
+          <div class="gc-role">Tech Lead — implementation sign-off</div>
+          <span class="gc-status">⏳ Pending</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

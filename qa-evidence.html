@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA-EVIDENCE.md — MM-Epic-1-Story-1A</title>
+<style>
+  :root {
+    --bg:#0D1117; --surface:#161B22; --border:#21262D;
+    --text:#C9D1D9; --dim:#6E7681; --orange:#F5821E;
+    --blue:#58A6FF; --green:#3FB950; --yellow:#E3B341;
+    --red:#F85149; --purple:#BC8CFF; --code-bg:#1F2937;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;line-height:1.7;}
+
+  .doc-header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .dh-left{display:flex;align-items:center;gap:14px;}
+  .back-link{color:var(--dim);text-decoration:none;font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:5px;}
+  .back-link:hover{color:var(--text);}
+  .doc-title{font-size:15px;font-weight:600;}
+  .doc-meta{font-size:11px;color:var(--dim);}
+  .status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-green{background:rgba(63,185,80,0.12);color:var(--green);border:1px solid rgba(63,185,80,0.3);}
+  .dl-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(88,166,255,0.1);color:var(--blue);border:1px solid rgba(88,166,255,0.3);text-decoration:none;transition:.2s;}
+  .dl-btn:hover{background:rgba(88,166,255,0.2);}
+
+  .layout{display:flex;max-width:1100px;margin:0 auto;padding:28px 20px;gap:28px;}
+  .toc{width:200px;flex-shrink:0;position:sticky;top:65px;height:fit-content;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .toc-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:10px;}
+  .toc a{display:block;font-size:12px;color:var(--dim);text-decoration:none;padding:4px 8px;border-radius:4px;margin-bottom:2px;}
+  .toc a:hover{background:var(--border);color:var(--text);}
+  .toc a.section{color:var(--green);font-weight:600;margin-top:8px;}
+  .content{flex:1;min-width:0;}
+
+  /* summary metrics */
+  .metrics-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+  .metric-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+  .m-val{font-size:22px;font-weight:bold;color:var(--orange);}
+  .m-val.green{color:var(--green);}
+  .m-lbl{font-size:10px;color:var(--dim);margin-top:3px;}
+
+  /* env cards */
+  .env-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;}
+  .env-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+  .env-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+  .env-badge.qa{background:rgba(88,166,255,0.12);color:var(--blue);border:1px solid rgba(88,166,255,0.25);}
+  .env-badge.runway{background:rgba(188,140,255,0.12);color:var(--purple);border:1px solid rgba(188,140,255,0.25);}
+  .env-title{font-size:14px;font-weight:700;}
+  .env-body{padding:20px;}
+
+  h3{font-size:13px;font-weight:700;color:var(--blue);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px;}
+  h3:first-child{margin-top:0;}
+  p{font-size:13px;margin-bottom:8px;}
+  code{font-family:'Courier New',monospace;background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:12px;color:var(--blue);}
+
+  /* tables */
+  .tbl-wrap{overflow-x:auto;margin:8px 0;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:var(--border);color:var(--text);padding:8px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;}
+  td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+  tr:last-child td{border:none;}
+  .pass-icon{color:var(--green);font-weight:bold;}
+  .fail-icon{color:var(--red);}
+
+  /* p95 box */
+  .perf-box{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:10px 0;font-family:'Courier New',monospace;font-size:13px;}
+  .perf-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .perf-row:last-child{margin:0;}
+  .perf-label{color:var(--dim);width:40px;}
+  .perf-bar-wrap{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+  .perf-bar{height:100%;border-radius:5px;background:var(--green);}
+  .perf-val{min-width:60px;text-align:right;font-weight:600;}
+  .perf-val.highlight{color:var(--green);}
+  .perf-note{font-size:11px;color:var(--dim);margin-left:8px;}
+
+  /* callout */
+  .callout{border-left:3px solid;padding:10px 14px;border-radius:0 6px 6px 0;margin:10px 0;font-size:12px;}
+  .callout.green{border-color:var(--green);background:rgba(63,185,80,0.06);}
+  .callout.warn{border-color:var(--yellow);background:rgba(227,179,65,0.06);}
+  .callout .cb-title{font-weight:700;margin-bottom:4px;}
+  .callout.green .cb-title{color:var(--green);}
+  .callout.warn  .cb-title{color:var(--yellow);}
+
+  /* sign-off */
+  .signoff-card{background:var(--bg);border:1px solid rgba(63,185,80,0.3);border-radius:8px;padding:14px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;}
+  .sc-name{font-weight:700;font-size:13px;}
+  .sc-role{font-size:11px;color:var(--dim);margin-top:2px;}
+  .sc-status{padding:3px 10px;border-radius:12px;font-size:11px;background:rgba(63,185,80,0.12);color:var(--green);border:1px solid rgba(63,185,80,0.3);}
+
+  /* info card (gatekeeper / PR assembly) */
+  .info-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;}
+  .info-card-header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .info-icon{font-size:18px;}
+  .info-card-title{font-size:13px;font-weight:700;color:var(--text);}
+  .info-card-sub{font-size:11px;color:var(--dim);margin-left:auto;}
+  .info-card-body{padding:18px 20px;}
+  .step-list{list-style:none;padding:0;counter-reset:step;}
+  .step-list li{counter-increment:step;display:flex;gap:12px;padding:7px 0;border-bottom:1px solid rgba(33,38,45,.5);font-size:12px;align-items:flex-start;}
+  .step-list li:last-child{border:none;}
+  .step-list li::before{content:counter(step);background:rgba(245,130,30,0.15);color:var(--orange);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+  .step-list li .s-title{color:var(--text);font-weight:600;}
+  .step-list li .s-desc{color:var(--dim);}
+  .gate-checklist{list-style:none;padding:0;}
+  .gate-checklist li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(33,38,45,.5);font-size:12px;}
+  .gate-checklist li:last-child{border:none;}
+  .gc-num{color:var(--dim);min-width:20px;font-size:11px;}
+  .gc-check{color:var(--green);font-weight:bold;min-width:16px;}
+  .gc-text{flex:1;color:var(--text);}
+  .gc-detail{color:var(--dim);font-size:11px;}
+  .tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;margin-left:6px;}
+  .tag.blue{background:rgba(88,166,255,0.12);color:var(--blue);}
+  .tag.orange{background:rgba(245,130,30,0.12);color:var(--orange);}
+  .tag.green{background:rgba(63,185,80,0.12);color:var(--green);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
+  .detail-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;}
+  .detail-box .db-title{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px;}
+  .detail-box ul{padding-left:16px;}
+  .detail-box li{font-size:12px;margin-bottom:4px;color:var(--text);}
+
+  hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div class="dh-left">
+    <a href="index.html" class="back-link">← Demo</a>
+    <div>
+      <div class="doc-title">QA-EVIDENCE.md — MM-Epic-1-Story-1A</div>
+      <div class="doc-meta">Customer Photo API · feat/MM-Epic-1_CustomerPhotoAPI · Generated: 2026-06-25</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="BUILD-EVIDENCE.md" class="dl-btn" style="color:var(--dim);border-color:var(--border);">← BUILD-EVIDENCE</a>
+    <a href="QA-EVIDENCE.md" download="QA-EVIDENCE.md" class="dl-btn">↓ Download QA-EVIDENCE.md</a>
+    <span class="status-badge badge-green">✓ All Gates Green</span>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#metrics">Summary Metrics</a>
+    <a href="#gatekeeper" class="section">mm-qa-gatekeeper</a>
+    <a href="#pr-assembly" class="section">PR Assembly Gate</a>
+    <a href="#qa" class="section">QA Environment</a>
+    <a href="#qa-unit">Unit Tests</a>
+    <a href="#qa-integration">Integration</a>
+    <a href="#qa-regression">Regression</a>
+    <a href="#qa-perf">p95 Latency</a>
+    <a href="#runway" class="section">Runway</a>
+    <a href="#runway-smoke">Smoke Tests</a>
+    <a href="#runway-perf">p95 Latency</a>
+    <a href="#runway-signoff">TL Sign-off</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- METRICS -->
+    <div id="metrics" class="metrics-row">
+      <div class="metric-box"><div class="m-val green">15/15</div><div class="m-lbl">Unit tests</div></div>
+      <div class="metric-box"><div class="m-val green">3/3</div>  <div class="m-lbl">Integration</div></div>
+      <div class="metric-box"><div class="m-val green">4/4</div>  <div class="m-lbl">Regression</div></div>
+      <div class="metric-box"><div class="m-val green">287ms</div><div class="m-lbl">p95 QA</div></div>
+      <div class="metric-box"><div class="m-val green">279ms</div><div class="m-lbl">p95 Runway</div></div>
+    </div>
+
+    <!-- mm-qa-gatekeeper -->
+    <div class="info-card" id="gatekeeper">
+      <div class="info-card-header">
+        <span class="info-icon">🤖</span>
+        <div class="info-card-title">mm-qa-gatekeeper — How It Ensures Correctness &amp; Efficiency</div>
+        <span class="info-card-sub">Invoked by /mm-ship · Phases 5, 6, 7</span>
+      </div>
+      <div class="info-card-body">
+        <p style="font-size:13px;margin-bottom:14px;">
+          <code>mm-qa-gatekeeper</code> is a specialised subagent in InCred's agentic SDLC pipeline.
+          It runs autonomously on each environment promotion, producing structured evidence before any human-approval gate fires.
+          <span class="tag blue">Haiku model</span><span class="tag orange">Phase 5–7</span>
+        </p>
+
+        <div class="two-col">
+          <div class="detail-box">
+            <div class="db-title">How it ensures correctness</div>
+            <ul>
+              <li>Reads <strong>PLAN.md Section 3</strong> for exact p95 targets and test scenarios — never invents thresholds</li>
+              <li>Runs the <em>actual</em> test command from PLAN.md IMPLEMENTATION INFO (<code>npm run test</code>) — not a simulation</li>
+              <li>Validates each integration test against live dynamo-svc and document-service in the target environment</li>
+              <li>Checks regression scenarios explicitly — runs the old endpoints and compares response shapes byte-for-byte</li>
+              <li><strong>Never silently approves</strong> — any failure surfaces root cause and blocks promotion until fixed</li>
+              <li>Signs BUILD-EVIDENCE + QA-EVIDENCE as a machine-auditable paper trail</li>
+            </ul>
+          </div>
+          <div class="detail-box">
+            <div class="db-title">How it ensures efficiency</div>
+            <ul>
+              <li>Uses <strong>Haiku</strong> (fast, low-cost) for test execution — Opus/Sonnet reserved for design phases</li>
+              <li>Reads PLAN.md Section 3 directly — no re-derivation of requirements, zero back-and-forth</li>
+              <li>Runs unit, integration, regression, and p95 in a <strong>single unattended pass</strong> — no human hand-off between sub-gates</li>
+              <li>Skips lint/format checks if not in <code>package.json</code> scripts — no false failures on unsupported tools</li>
+              <li>Partial results surface immediately — developer can fix and re-run just the failing suite</li>
+              <li>Context passed directly (no re-reads of source code) — minimal token cost per gate run</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div class="db-title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px;">Gate execution flow</div>
+          <ol class="step-list">
+            <li><div><div class="s-title">Read PLAN.md Section 3</div><div class="s-desc">Extract p95 targets, unit/integration/regression scenarios, test command, services in scope</div></div></li>
+            <li><div><div class="s-title">Deploy branch to environment</div><div class="s-desc">Pull from base branch, verify deployment health check responds</div></div></li>
+            <li><div><div class="s-title">Run unit tests</div><div class="s-desc">Execute <code>npm run test</code> (or equivalent); require 100% of story tests to pass</div></div></li>
+            <li><div><div class="s-title">Run integration tests</div><div class="s-desc">Hit live endpoints with golden data from PLAN.md Section 3 AI Acceleration Strategy</div></div></li>
+            <li><div><div class="s-title">Run regression suite</div><div class="s-desc">Verify all endpoints listed in PLAN.md Section 3 Regression Scenarios still behave identically</div></div></li>
+            <li><div><div class="s-title">Measure p95 latency</div><div class="s-desc">50 samples against each integration scenario; compare to PLAN.md targets; hard-fail if exceeded</div></div></li>
+            <li><div><div class="s-title">Write QA-EVIDENCE.md</div><div class="s-desc">Structured report with all results — committed to monorepo before human sign-off gate fires</div></div></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- PR Assembly Gate -->
+    <div class="info-card" id="pr-assembly">
+      <div class="info-card-header">
+        <span class="info-icon">🔒</span>
+        <div class="info-card-title">PR Assembly — 8-Point Sign-off Gate</div>
+        <span class="info-card-sub">Completed before PRs were raised · /generate-pr Phase 6</span>
+      </div>
+      <div class="info-card-body">
+        <p style="font-size:13px;margin-bottom:14px;">
+          Before any PR is created, <code>/generate-pr</code> Phase 6 runs a deterministic 8-point checklist.
+          <strong>All 8 must be green</strong> — a single red item hard-blocks PR creation.
+          QA-EVIDENCE.md (this file) is item 8 — it closes the loop between implementation and environment promotion.
+        </p>
+        <ul class="gate-checklist">
+          <li><span class="gc-num">1</span><span class="gc-check">✅</span><span class="gc-text">PLAN.md present on feature branch</span><span class="gc-detail">3 sections · sequence diagram · approval gate</span></li>
+          <li><span class="gc-num">2</span><span class="gc-check">✅</span><span class="gc-text">Sequence diagram in PLAN.md Section 2</span><span class="gc-detail">mCollect → CS → dynamo-svc → document-service → S3 (inc-vkyc)</span></li>
+          <li><span class="gc-num">3</span><span class="gc-check">✅</span><span class="gc-text">Service bindings table in PLAN.md Section 2</span><span class="gc-detail">customer-service Add · document-service Modify · dynamo-svc no change</span></li>
+          <li><span class="gc-num">4</span><span class="gc-check">✅</span><span class="gc-text">All failing tests (Red phase) turned green</span><span class="gc-detail">15/15 · 0 skipped · 0 pending</span></li>
+          <li><span class="gc-num">5</span><span class="gc-check">✅</span><span class="gc-text">No skipped or pending tests</span><span class="gc-detail">ts-jest · jest · full suite executed</span></li>
+          <li><span class="gc-num">6</span><span class="gc-check">✅</span><span class="gc-text">All function impact flags reviewed</span><span class="gc-detail">getPresignedUrl() is a new method — no existing callers affected; no PARTIAL-REUSE body changes</span></li>
+          <li><span class="gc-num">7</span><span class="gc-check">✅</span><span class="gc-text">BUILD-EVIDENCE.md present in monorepo</span><span class="gc-detail">MM/Epic_Stories/MM-Epic-1_CustomerPhotoAPI/BUILD-EVIDENCE.md</span></li>
+          <li><span class="gc-num">8</span><span class="gc-check">✅</span><span class="gc-text">QA-EVIDENCE.md present in monorepo</span><span class="gc-detail">This file · generated by mm-qa-gatekeeper after all environment gates passed</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- QA ENVIRONMENT -->
+    <div class="env-card" id="qa">
+      <div class="env-header">
+        <span class="env-badge qa">QA</span>
+        <div class="env-title">qa-mm environment</div>
+        <span style="font-size:11px;color:var(--dim);margin-left:auto;">Deployed 2026-06-25 · feat/MM-Epic-1_CustomerPhotoAPI → preprod</span>
+      </div>
+      <div class="env-body">
+
+        <h3 id="qa-unit">Unit Tests — customer-service</h3>
+        <div class="callout green">
+          <div class="cb-title">15 / 15 passing</div>
+          <p>Run: <code>NODE_ENV=preprod npm run test -- --testPathPattern="customerPhoto"</code></p>
+        </div>
+
+        <hr>
+        <h3 id="qa-integration">Integration Tests</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Scenario</th><th>Request</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>2-customer loan with photos</td>
+                <td><code>GET /v1/customer/photo/4624411239671012A</code></td>
+                <td>HTTP 200, 2 records</td>
+                <td>HTTP 200, 2 records · photoUrls valid</td>
+                <td class="pass-icon">✅</td>
+              </tr>
+              <tr>
+                <td>Unknown loan ID</td>
+                <td><code>GET /v1/customer/photo/UNKNOWN_LOAN</code></td>
+                <td>HTTP 404 LOAN_NOT_FOUND</td>
+                <td>HTTP 404 <code>{"statusCode":404,"status":false,"message":"Loan not found"}</code></td>
+                <td class="pass-icon">✅</td>
+              </tr>
+              <tr>
+                <td>Loan with no photos</td>
+                <td><code>GET /v1/customer/photo/NO_PHOTO_LOAN</code></td>
+                <td>HTTP 200 <code>[]</code></td>
+                <td>HTTP 200 <code>{"response":[]}</code></td>
+                <td class="pass-icon">✅</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="qa-regression">Regression — Existing Endpoints</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Endpoint</th><th>What's verified</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /v1/customer/documents/:id</code></td><td>Response shape unchanged after DocumentClientService modification</td><td class="pass-icon">✅</td></tr>
+              <tr><td><code>GET /v2/customer/artifacts/:id</code></td><td>MASK param behaviour unchanged, GET_CUSTOMER_ARTIFACT unaffected</td><td class="pass-icon">✅</td></tr>
+              <tr><td><code>POST /v1/file/get_signed_url</code> (no <code>expires_in</code>)</td><td>Continues to use server default TTL — existing callers unaffected</td><td class="pass-icon">✅</td></tr>
+              <tr><td><code>GET /metrics</code></td><td>Prometheus endpoint accessible · ERROR_COUNT counter intact</td><td class="pass-icon">✅</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="qa-perf">p95 Latency — QA environment (50 samples)</h3>
+        <p style="font-size:12px;color:var(--dim);margin-bottom:12px;">Scenario: <code>GET /v1/customer/photo/4624411239671012A</code> — 2 customers, both have VKYC photos</p>
+        <div class="perf-box">
+          <div class="perf-row">
+            <span class="perf-label">p50</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:5%;background:var(--blue)"></div></div>
+            <span class="perf-val" style="color:var(--blue)">142ms</span>
+            <span class="perf-note">median</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-label">p90</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:8.5%;background:var(--yellow)"></div></div>
+            <span class="perf-val" style="color:var(--yellow)">251ms</span>
+            <span class="perf-note"></span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-label" style="color:var(--green);font-weight:700;">p95</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:10%;background:var(--green)"></div></div>
+            <span class="perf-val highlight">287ms</span>
+            <span class="perf-note" style="color:var(--green)">✓ target &lt;3000ms — 10.5× headroom</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-label">p99</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:11%;background:var(--dim)"></div></div>
+            <span class="perf-val" style="color:var(--dim)">312ms</span>
+            <span class="perf-note"></span>
+          </div>
+        </div>
+        <div class="callout green" style="margin-top:10px">
+          <div class="cb-title">Architecture breakdown (estimated)</div>
+          <p>SQL query via dynamo-svc: ~100ms &nbsp;·&nbsp; Parallel GET_CUSTOMER_ARTIFACT (×2): ~80ms &nbsp;·&nbsp; Parallel presigned URL (×2): ~90ms &nbsp;·&nbsp; Overhead: ~17ms</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RUNWAY -->
+    <div class="env-card" id="runway">
+      <div class="env-header">
+        <span class="env-badge runway">RUNWAY</span>
+        <div class="env-title">runway environment</div>
+        <span style="font-size:11px;color:var(--dim);margin-left:auto;">Promoted from qa-mm · 2026-06-25</span>
+      </div>
+      <div class="env-body">
+
+        <h3 id="runway-smoke">Smoke Tests</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Check</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /v1/customer/photo/:loanId</code> — endpoint accessible and returning responses</td><td class="pass-icon">✅</td></tr>
+              <tr><td>Missing <code>loanId</code> → HTTP 400 (input validation active on runway)</td><td class="pass-icon">✅</td></tr>
+              <tr><td><code>urlExpiresAt</code> is epoch ms ≈ <code>Date.now() + 3600000</code> ±5s</td><td class="pass-icon">✅</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h3 id="runway-perf">p95 Latency — Runway (50 samples)</h3>
+        <div class="perf-box">
+          <div class="perf-row">
+            <span class="perf-label">p50</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:4.6%;background:var(--blue)"></div></div>
+            <span class="perf-val" style="color:var(--blue)">138ms</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-label">p90</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:8.3%;background:var(--yellow)"></div></div>
+            <span class="perf-val" style="color:var(--yellow)">248ms</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-label" style="color:var(--green);font-weight:700;">p95</span>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:9.3%;background:var(--green)"></div></div>
+            <span class="perf-val highlight">279ms</span>
+            <span class="perf-note" style="color:var(--green)">✓ target &lt;3000ms — 10.8× headroom</span>
+          </div>
+        </div>
+
+        <hr>
+        <h3 id="runway-signoff">Tech Lead Sign-off</h3>
+        <div class="signoff-card">
+          <div>
+            <div class="sc-name">Sunil Kumar</div>
+            <div class="sc-role">Tech Lead — Runway gate sign-off</div>
+          </div>
+          <span class="sc-status">✓ Approved · 2026-06-25</span>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
