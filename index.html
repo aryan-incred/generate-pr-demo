@@ -369,6 +369,29 @@
     pointer-events: none;
   }
   #terminal-wrap { position: relative; }
+  .theme-btn-demo{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);border-radius:6px;padding:4px 9px;font-size:13px;cursor:pointer;line-height:1;margin-right:4px;}
+  .theme-btn-demo:hover{background:rgba(255,255,255,.2);}
+  /* Light mode — sidebar + final screen go light; terminal stays dark intentionally */
+  body.light{--bg:#F0F2F5;--surface:#FFFFFF;--border:#D0D7DE;--text:#24292F;--dim:#57606A;}
+  body.light #sidebar{background:#F0F2F5;border-left:1px solid #D0D7DE;}
+  body.light #sidebar-title{background:#FFFFFF;color:#57606A;border-bottom-color:#D0D7DE;}
+  body.light .phase-card{background:#FFFFFF;border-color:#D0D7DE;color:#24292F;}
+  body.light .phase-card .ph-title{color:#24292F;}
+  body.light .ph-time{color:#57606A;}
+  body.light #metrics{background:#FFFFFF;border-top-color:#D0D7DE;}
+  body.light .metric-box{background:#F6F8FA;border-color:#D0D7DE;}
+  body.light .metric-box .m-val{color:#F5821E;}
+  body.light .metric-box.green .m-val{color:#1A7F37;}
+  body.light .metric-box .m-lbl{color:#57606A;}
+  body.light #progress-bar-wrap{background:#D0D7DE;}
+  body.light #final-screen{background:#F6F8FA;}
+  body.light .f-card{background:#FFFFFF;border-color:#D0D7DE;}
+  body.light .f-phase{background:rgba(26,127,55,.06);border-color:rgba(26,127,55,.2);}
+  body.light .f-phase .fp-name{color:#24292F;}
+  body.light .f-phase .fp-stat{color:#57606A;}
+  body.light .f-pr{background:#FFFFFF;border-color:rgba(3,102,214,.25);}
+  body.light .f-pr .pr-repo,.f-pr .pr-num{color:#24292F;}
+  body.light .f-hint{color:#57606A;}
 </style>
 </head>
 <body>
@@ -387,6 +410,7 @@
   <div class="logo">InCred <span>MM &mdash;</span> /generate-pr <span>pipeline replay</span></div>
   <div class="story-badge">MM-Epic-1-Story-1A · Customer Photo API</div>
   <div style="display:flex;align-items:center">
+    <button class="theme-btn-demo" id="themeBtn" onclick="toggleTheme()">☀️</button>
     <a href="architecture.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(88,166,255,0.1);color:var(--blue);border:1px solid rgba(88,166,255,0.3);text-decoration:none;margin-right:12px;">📐 Architecture</a>
     <div class="controls">
       <kbd>Space</kbd> advance &nbsp; <kbd>F</kbd> fast &nbsp; <kbd>R</kbd> restart
@@ -1059,6 +1083,9 @@ async function main() {
 }
 
 main();
+
+function toggleTheme(){const l=document.body.classList.toggle('light');document.getElementById('themeBtn').textContent=l?'🌙':'☀️';localStorage.setItem('gpr-theme',l?'light':'dark');}
+(function(){if(localStorage.getItem('gpr-theme')==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='🌙';}})();
 </script>
 </body>
 </html>

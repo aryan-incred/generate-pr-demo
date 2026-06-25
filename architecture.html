@@ -176,6 +176,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.theme-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);border-radius:6px;padding:4px 9px;font-size:13px;cursor:pointer;line-height:1;}
+.theme-btn:hover{background:rgba(255,255,255,.2);}
+body.light{--bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;--text:#24292F;--dim:#57606A;--code-bg:#F0F2F5;}
+body.light .detail-box{background:#F0F2F5;}
+body.light pre{color:#24292F;background:#F0F2F5;}
+body.light pre .kw{color:#CF222E;}pre .cmt{color:#57606A;}pre .str{color:#0550AE;}pre .fn{color:#8250DF;}
 </style>
 </head>
 <body>
@@ -189,7 +195,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
       <div class="ah-sub">From idea to production — one micropod sprint with Claude Code</div>
     </div>
   </div>
-  <a href="index.html" class="ah-demo-btn">▶ Watch Live Demo</a>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <a href="index.html" class="ah-demo-btn">▶ Watch Live Demo</a>
+  </div>
 </header>
 
 <!-- OVERVIEW STRIP -->
@@ -940,6 +949,9 @@ No menu shown</span></pre>
 </div><!-- /arch-body -->
 
 <script>
+// Theme toggle
+function toggleTheme(){const l=document.body.classList.toggle('light');document.getElementById('themeBtn').textContent=l?'🌙':'☀️';localStorage.setItem('gpr-theme',l?'light':'dark');}
+(function(){if(localStorage.getItem('gpr-theme')==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='🌙';}})();
 // domain-map.json toggle
 function toggleConfig() {
   const sec = document.getElementById('sec-config');
