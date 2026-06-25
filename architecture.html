@@ -436,18 +436,18 @@ body.light table tr:nth-child(even){background:rgba(0,0,0,0.02);}
         </div>
         <div style="margin:10px 0 10px;background:var(--code-bg);border:1px solid rgba(248,81,73,0.25);border-radius:7px;padding:13px 16px;font-size:12px;">
           <div style="color:var(--red);font-weight:700;margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Example from this session</div>
-          <div style="color:var(--text);margin-bottom:4px;"><strong>Function:</strong> <code style="background:rgba(0,0,0,0.4);padding:1px 6px;border-radius:3px;color:var(--cyan);">DocumentClientService.getPresignedUrl()</code></div>
+          <div style="color:var(--text);margin-bottom:4px;"><strong>Function:</strong> <code style="background:var(--code-bg);padding:1px 6px;border-radius:3px;color:var(--cyan);">DocumentClientService.getPresignedUrl()</code></div>
           <div style="color:var(--dim);margin-bottom:4px;"><strong style="color:var(--text)">Change type:</strong> <span style="color:var(--green)">New method added (PARTIAL-REUSE)</span> — no body changes to existing methods</div>
-          <div style="color:var(--dim);margin-bottom:4px;"><strong style="color:var(--text)">Callers found:</strong> Only <code style="background:rgba(0,0,0,0.4);padding:1px 5px;border-radius:3px;color:var(--blue);">CustomerPhotoService</code> (new caller) · existing callers untouched</div>
+          <div style="color:var(--dim);margin-bottom:4px;"><strong style="color:var(--text)">Callers found:</strong> Only <code style="background:var(--code-bg);padding:1px 5px;border-radius:3px;color:var(--blue);">CustomerPhotoService</code> (new caller) · existing callers untouched</div>
           <div style="color:var(--green);margin-top:6px;font-size:11px;">✓ No flag raised — adding a new method does not affect existing callers</div>
         </div>
         <div style="background:var(--code-bg);border:1px solid rgba(248,81,73,0.2);border-radius:7px;padding:13px 16px;font-size:12px;margin-bottom:8px;">
           <div style="color:var(--red);font-weight:700;margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">When the flag WOULD fire</div>
           <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 14px;align-items:start;">
             <div style="color:var(--dim);font-size:11px;">Trigger</div>
-            <div>Existing function body in a Core/Shared service is modified — e.g. <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;color:var(--cyan);">DynamoService.makeDynamoDBRequest()</code> body changes</div>
+            <div>Existing function body in a Core/Shared service is modified — e.g. <code style="background:var(--code-bg);padding:1px 5px;border-radius:3px;color:var(--cyan);">DynamoService.makeDynamoDBRequest()</code> body changes</div>
             <div style="color:var(--dim);font-size:11px;">Agent traces</div>
-            <div>Greps all domain services for every call to the changed function — finds every <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;color:var(--cyan);">.makeDynamoDBRequest()</code> invocation across customer-service, application-service, artifact-service etc.</div>
+            <div>Greps all domain services for every call to the changed function — finds every <code style="background:var(--code-bg);padding:1px 5px;border-radius:3px;color:var(--cyan);">.makeDynamoDBRequest()</code> invocation across customer-service, application-service, artifact-service etc.</div>
             <div style="color:var(--dim);font-size:11px;">Flag shows</div>
             <div style="color:var(--text);">Function name · Core service · List of all calling services at risk · Nature of the logic change</div>
             <div style="color:var(--dim);font-size:11px;">Blocks</div>
@@ -965,6 +965,7 @@ No menu shown</span></pre>
               <div style="display:flex;gap:8px;"><span style="color:var(--purple);flex-shrink:0">③</span><div><code style="color:var(--orange)">EPIC-REGISTRY.md</code> status → <code style="color:var(--yellow)">"In Pipeline"</code></div></div>
               <div style="display:flex;gap:8px;"><span style="color:var(--purple);flex-shrink:0">④</span><div><code style="color:var(--orange)">retrospectives/[Epic_ID]-retro.md</code> → story entry appended</div></div>
               <div style="display:flex;gap:8px;"><span style="color:var(--purple);flex-shrink:0">⑤</span><div><code style="color:var(--orange)">Knowledge_Base/</code> → confirmed rules written as <span style="color:var(--yellow)">DRAFT — pending PM review</span></div></div>
+              <div style="display:flex;gap:8px;"><span style="color:var(--cyan);flex-shrink:0">⑥</span><div><code style="color:var(--cyan)">TOKEN-LOG.md</code> → per-phase token breakdown committed alongside evidence files (see Model Orchestrator FAQ below)</div></div>
             </div>
             <div style="margin-top:12px;padding:8px 10px;background:rgba(188,140,255,0.06);border:1px solid rgba(188,140,255,0.2);border-radius:6px;font-size:11px;color:var(--dim);">All committed in a separate PR to monorepo main. PM reviews KB drafts before merging — drafted rules only become canonical after PM approval.</div>
           </div>
@@ -1077,6 +1078,100 @@ No menu shown</span></pre>
             <div style="font-size:11px;color:var(--dim);line-height:1.6;"><code style="color:var(--yellow)">documentServiceUrl</code> referenced in k8s config for artifact-service, but zero client code in the service. Config key exists, no HTTP calls made. Future integration, not yet implemented.</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- FAQ 7: Model Orchestrator + Token Logging -->
+    <div class="faq-card" id="faq-7">
+      <div class="faq-header" onclick="toggleFaq('faq-7')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:18px;">🤖</span>
+          <div><div class="faq-title">Model Orchestrator &amp; Token Logging</div><div class="faq-sub">Which model runs each phase, why, and how token spend is tracked per story</div></div>
+        </div>
+        <span class="faq-chevron" id="faq-7-chevron">▼</span>
+      </div>
+      <div class="faq-body" id="faq-7-body" style="display:none;">
+
+        <!-- Model routing table -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--cyan);margin-bottom:12px;">Phase → Model Assignment <span style="font-size:10px;color:var(--dim);text-transform:none;letter-spacing:0;">· config: <code style="color:var(--orange)">generate-pr/model-router.json</code></span></div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr style="background:var(--surface);">
+                  <th style="padding:8px 12px;text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Phase</th>
+                  <th style="padding:8px 12px;text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Agent</th>
+                  <th style="padding:8px 12px;text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Model</th>
+                  <th style="padding:8px 12px;text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Tier</th>
+                  <th style="padding:8px 12px;text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Why this model</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">P0 · Select</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">orchestrator</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--green);font-size:11px;">claude-haiku-4-5</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3);">Economy</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">File reads + string matching. No reasoning needed.</td></tr>
+                <tr style="background:rgba(255,255,255,0.02);"><td style="padding:7px 12px;border:1px solid var(--border);color:var(--blue);font-weight:600;">P1 · Requirements</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--blue);">@mm-scoping-analyst</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--blue);font-size:11px;">claude-sonnet-4-6</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(88,166,255,0.1);color:var(--blue);border:1px solid rgba(88,166,255,0.3);">Standard</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">PM checklist pattern-match. Story + KB context fits standard window.</td></tr>
+                <tr><td style="padding:7px 12px;border:1px solid var(--border);color:var(--orange);font-weight:600;">P2 · Blueprint</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--orange);">@mm-codebase-planner</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--orange);font-size:11px;">claude-sonnet-4-6[1m]</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(245,130,30,0.1);color:var(--orange);border:1px solid rgba(245,130,30,0.3);">Extended</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Reads multiple SERVICE-KB.md files simultaneously. 1M context prevents truncation on large service graphs.</td></tr>
+                <tr style="background:rgba(255,255,255,0.02);"><td style="padding:7px 12px;border:1px solid var(--border);color:var(--red);font-weight:600;">P3 · TDD Red</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--red);">@mm-test-architect</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--blue);font-size:11px;">claude-sonnet-4-6</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(88,166,255,0.1);color:var(--blue);border:1px solid rgba(88,166,255,0.3);">Standard</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Test scaffolding from PLAN.md Section 3. Context is bounded — standard window sufficient.</td></tr>
+                <tr><td style="padding:7px 12px;border:1px solid var(--border);color:var(--green);font-weight:600;">P4 · Implementation</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--green);">@mm-implementer</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--orange);font-size:11px;">claude-sonnet-4-6[1m]</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(245,130,30,0.1);color:var(--orange);border:1px solid rgba(245,130,30,0.3);">Extended</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Holds PLAN.md + all failing test paths + modified file contents across multiple chunks. 1M window prevents context drop mid-story.</td></tr>
+                <tr style="background:rgba(255,255,255,0.02);"><td style="padding:7px 12px;border:1px solid var(--border);color:var(--yellow);">P5 · QA Gates</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--yellow);">@mm-qa-gatekeeper</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--green);font-size:11px;">claude-haiku-4-5</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3);">Economy</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Shell commands + result parsing. Mechanical verification — no synthesis needed.</td></tr>
+                <tr><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">P6 · PR Assembly</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">orchestrator</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--green);font-size:11px;">claude-haiku-4-5</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3);">Economy</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Checklist validation + GitHub API call. Template work.</td></tr>
+                <tr style="background:rgba(255,255,255,0.02);"><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">P7 · KB Update</td><td style="padding:7px 12px;border:1px solid var(--border);color:var(--dim);">orchestrator</td><td style="padding:7px 12px;border:1px solid var(--border);"><code style="color:var(--green);font-size:11px;">claude-haiku-4-5</code></td><td style="padding:7px 12px;border:1px solid var(--border);"><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3);">Economy</span></td><td style="padding:7px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);">Filling evidence templates from existing content.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Why extended for P2 and P4 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div style="background:var(--bg);border:1px solid rgba(245,130,30,0.25);border-radius:8px;padding:14px;">
+            <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px;">Why sonnet-4-6[1m] for P2 and P4?</div>
+            <div style="font-size:11px;color:var(--dim);line-height:1.7;">
+              <strong style="color:var(--text);">P2 Blueprint</strong> — @mm-codebase-planner reads all SERVICE-KB.md files for every service in scope, plus domain-map.json, plus the story ACs. A 5-service story can easily put 50–80k tokens into context before writing a single line of PLAN.md. Standard window risks truncation.<br><br>
+              <strong style="color:var(--text);">P4 Implementation</strong> — @mm-implementer holds PLAN.md + all failing test file contents + modified source files in context across every chunk. Multi-chunk stories accumulate context; without 1M window, later chunks lose earlier context and introduce regressions.
+            </div>
+          </div>
+          <div style="background:var(--bg);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:14px;">
+            <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px;">Why haiku for P0, P5, P6, P7?</div>
+            <div style="font-size:11px;color:var(--dim);line-height:1.7;">
+              These phases are <strong style="color:var(--text);">mechanical</strong> — they execute shell commands, compare checklist items, fill templates, or call GitHub APIs. No multi-step reasoning is required. Haiku handles them correctly at ~5× lower cost than Sonnet, and these phases combined typically use &lt;20% of total story tokens.
+            </div>
+          </div>
+        </div>
+
+        <!-- TOKEN-LOG.md schema -->
+        <div style="margin-bottom:4px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--cyan);margin-bottom:12px;">TOKEN-LOG.md — per-phase token tracking <span style="font-size:10px;color:var(--dim);text-transform:none;letter-spacing:0;">written at each gate by /generate-pr · committed in Phase 7</span></div>
+          <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:11px;line-height:1.9;overflow-x:auto;"><span style="color:var(--text)"># TOKEN-LOG — MM-Epic-1-Story-1A</span>
+<span style="color:var(--dim)">Epic: MM-Epic-1  |  Branch: feat/MM-Epic-1_CustomerPhotoAPI</span>
+
+<span style="color:var(--dim)">| # | Phase                   | Agent                  | Model                    | In (k) | Out (k) | Total (k) | User         | Timestamp        |</span>
+<span style="color:var(--dim)">|---|-------------------------|------------------------|--------------------------|--------|---------|-----------|--------------|------------------|</span>
+<span style="color:var(--dim)">| 1 | P1 · Requirements       | @mm-scoping-analyst    | claude-sonnet-4-6        | 11     | 4       | 15        | Aryan Maurya | 2026-06-25T09:45 |</span>
+<span style="color:var(--dim)">| 2 | P2 · Blueprint (1 loop) | @mm-codebase-planner   | claude-sonnet-4-6[1m]    | 50     | 15      | 65        | Aryan Maurya | 2026-06-25T11:10 |</span>
+<span style="color:var(--dim)">| 3 | P3 · TDD Red            | @mm-test-architect     | claude-sonnet-4-6        | 20     | 8       | 28        | Aryan Maurya | 2026-06-25T12:00 |</span>
+<span style="color:var(--dim)">| 4 | P4 · Impl (3 chunks)    | @mm-implementer        | claude-sonnet-4-6[1m]    | 62     | 23      | 85        | Aryan Maurya | 2026-06-25T14:20 |</span>
+<span style="color:var(--dim)">| 5 | P5 · Quality Gates      | @mm-qa-gatekeeper      | claude-haiku-4-5         | 18     | 4       | 22        | Aryan Maurya | 2026-06-25T15:05 |</span>
+<span style="color:var(--dim)">| 6 | P6 · PR Assembly        | orchestrator           | claude-haiku-4-5         | 6      | 2       | 8         | Aryan Maurya | 2026-06-25T15:30 |</span>
+<span style="color:var(--dim)">| 7 | P7 · KB Update          | orchestrator           | claude-haiku-4-5         | 9      | 3       | 12        | Aryan Maurya | 2026-06-25T15:48 |</span>
+<span style="color:var(--cyan)">| — | TOTAL                   |                        |                          | 176    | 59      | 235       |              |                  |</span></pre>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;">
+            <div style="background:rgba(245,130,30,0.07);border:1px solid rgba(245,130,30,0.2);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:var(--orange);">63.8%</div>
+              <div style="font-size:10px;color:var(--dim);margin-top:2px;">Extended context<br><code style="font-size:9px;">sonnet-4-6[1m]</code> · P2 + P4</div>
+            </div>
+            <div style="background:rgba(88,166,255,0.07);border:1px solid rgba(88,166,255,0.2);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:var(--blue);">18.3%</div>
+              <div style="font-size:10px;color:var(--dim);margin-top:2px;">Standard<br><code style="font-size:9px;">sonnet-4-6</code> · P1 + P3</div>
+            </div>
+            <div style="background:rgba(63,185,80,0.07);border:1px solid rgba(63,185,80,0.2);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:var(--green);">17.9%</div>
+              <div style="font-size:10px;color:var(--dim);margin-top:2px;">Economy<br><code style="font-size:9px;">haiku-4-5</code> · P5+P6+P7</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:rgba(121,192,255,0.05);border:1px solid rgba(121,192,255,0.2);border-radius:7px;font-size:11px;color:var(--dim);line-height:1.6;">
+            TOKEN-LOG.md is written incrementally — one row per phase, appended at each gate before the approval prompt. Final TOTAL row added in P7. The file is committed to <code style="color:var(--text)">MM/Epic_Stories/[Epic_ID]/</code> and read by <code style="color:var(--text)">/mm-telemetry</code> to populate the per-phase token breakdown in the fulfillment dashboard.
+          </div>
+        </div>
+
       </div>
     </div>
 
