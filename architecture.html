@@ -193,6 +193,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 
 <!-- OVERVIEW STRIP -->
 <div id="overview">
+  <div class="ov-item"><span class="section-marker" style="background:rgba(121,192,255,0.12);color:var(--cyan);border:1px solid rgba(121,192,255,0.3);">⚙️ Config</span><div class="ov-conn" style="width:12px"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--cyan);font-size:8px;width:24px;height:24px;border-radius:4px;">json</div><div class="ov-label">domain-map</div><div class="ov-conn"></div></div>
   <div class="ov-item"><span class="section-marker" style="background:rgba(188,140,255,0.15);color:var(--purple);border:1px solid rgba(188,140,255,0.3);">PRE</span></div>
   <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">E</div><div class="ov-label">Enrich</div><div class="ov-conn"></div></div>
   <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">S</div><div class="ov-label">Story</div><div class="ov-conn"></div></div>
@@ -220,6 +222,155 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 
 <!-- BODY -->
 <div class="arch-body">
+
+  <!-- ══ DOMAIN-MAP CONFIG ══ -->
+  <div style="background:rgba(121,192,255,0.04);border:1px solid rgba(121,192,255,0.2);border-radius:12px;padding:24px;margin-bottom:36px;" id="sec-config" class="phase-wrap visible">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <span style="font-size:22px;">⚙️</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--cyan);">domain-map.json — Configuration Registry</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:2px;">Lives at <code style="background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:3px;color:var(--blue);">~/.claude/commands/generate-pr/domain-map.json</code> &nbsp;·&nbsp; Read first by every /generate-pr skill — makes the entire pipeline domain-agnostic</div>
+      </div>
+    </div>
+
+    <!-- Two-column: annotated JSON + key table -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;">
+
+      <!-- Annotated JSON -->
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:8px;">Current configuration (MM team)</div>
+        <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:11.5px;line-height:1.8;overflow-x:auto;"><span style="color:var(--dim)">{</span>
+  <span style="color:var(--cyan);font-weight:700">"MM"</span><span style="color:var(--dim)">: {</span>             <span style="color:var(--dim);font-style:italic">← domain key</span>
+    <span style="color:var(--dim)">"name":</span>         <span style="color:var(--green)">"Money Movement"</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"monorepo":</span>     <span style="color:var(--orange)">"~/Incred-Engineers/InCred-Product-.../",</span>
+    <span style="color:var(--dim)">"personas":</span>     <span style="color:var(--orange)">"~/...MM/Knowledge_Base/personas.md",</span>
+    <span style="color:var(--dim)">"epics_dir":</span>    <span style="color:var(--orange)">"~/...MM/Epic_Stories/",</span>
+    <span style="color:var(--dim)">"registry":</span>     <span style="color:var(--orange)">"~/...MM/Epic_Stories/EPIC-REGISTRY.md",</span>
+    <span style="color:var(--dim)">"kb_dir":</span>       <span style="color:var(--orange)">"~/...MM/Knowledge_Base/",</span>
+    <span style="color:var(--dim)">"artefacts_dir":</span><span style="color:var(--orange)">"~/...MM/Artefacts/",</span>
+    <span style="color:var(--dim)">"id_prefix":</span>    <span style="color:var(--yellow)">"MM-Epic"</span><span style="color:var(--dim)">,</span>    <span style="color:var(--dim);font-style:italic">← domain guard key</span>
+    <span style="color:var(--dim)">"github_repo":</span>  <span style="color:var(--green)">"Incred-Engineers/InCred-Product-..."</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"services_root":</span><span style="color:var(--orange)">"~/Incred-Engineers/",</span>
+    <span style="color:var(--dim)">"services":</span> <span style="color:var(--dim)">[</span>     <span style="color:var(--dim);font-style:italic">← Phase 2 reads these SERVICE-KB.md</span>
+      <span style="color:var(--blue)">"paymentservice"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"Dynamo"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"document-service"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"customer-service"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"application-service"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"artifact-service"</span>
+    <span style="color:var(--dim)">]</span>
+  <span style="color:var(--dim)">}</span>
+<span style="color:var(--dim)">}</span></pre>
+      </div>
+
+      <!-- Key explanations -->
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:8px;">What each key controls at runtime</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--cyan);font-size:11px;min-width:90px;flex-shrink:0">name</code>
+            <div style="font-size:11px;color:var(--dim);">Display label in Phase 0 team-selection menu and in all gate messages</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--orange);font-size:11px;min-width:90px;flex-shrink:0">monorepo</code>
+            <div style="font-size:11px;color:var(--dim);">Root of the PM monorepo — where PLAN.md, BUILD-EVIDENCE.md, QA-EVIDENCE.md are written</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid rgba(188,140,255,0.3);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--purple);font-size:11px;min-width:90px;flex-shrink:0">personas</code>
+            <div style="font-size:11px;color:var(--dim);">Used in <strong style="color:var(--text)">every phase</strong> — resolves who is PM, Tech Lead, VP, QA. Gates read this to assign reviewers and generate Slack pings automatically</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--orange);font-size:11px;min-width:90px;flex-shrink:0">epics_dir</code>
+            <div style="font-size:11px;color:var(--dim);">Phase 0 scans this for active stories. Phase 1 reads the story file. Phase 2 writes PLAN.md here</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--orange);font-size:11px;min-width:90px;flex-shrink:0">registry</code>
+            <div style="font-size:11px;color:var(--dim);">EPIC-REGISTRY.md — Phase 0 reads this to list active/in-progress epics. Prevents duplicate Epic IDs across concurrent team members</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--orange);font-size:11px;min-width:90px;flex-shrink:0">kb_dir</code>
+            <div style="font-size:11px;color:var(--dim);">Knowledge Base — Phase 1 and Phase 2 ground decisions here. Prevents RESOLVE-IN-PLAN items from recurring story-to-story</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid rgba(227,179,65,0.3);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--yellow);font-size:11px;min-width:90px;flex-shrink:0">id_prefix</code>
+            <div style="font-size:11px;color:var(--dim);"><strong style="color:var(--yellow)">Domain Guard key</strong> — Phase 0 validates that every Epic ID starts with this prefix. Passing a LAP-Epic ID to the MM pipeline hard-stops with an error before touching any file</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid rgba(88,166,255,0.25);border-radius:6px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start;">
+            <code style="color:var(--blue);font-size:11px;min-width:90px;flex-shrink:0">services</code>
+            <div style="font-size:11px;color:var(--dim);"><strong style="color:var(--blue)">Phase 2 only</strong> — @mm-codebase-planner looks for SERVICE-KB.md in each directory listed here. Services not listed are ignored; services without SERVICE-KB.md fall back to grep</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 0 runtime flow -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:10px;">Phase 0 — how domain selection works at runtime</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:10px;">If domain-map.json has <strong style="color:var(--text)">one key</strong> → auto-selected, no prompt.<br>If it has <strong style="color:var(--text)">multiple keys</strong> → numbered menu:</div>
+        <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;line-height:1.7;"><span style="color:var(--green)">Which team are you working on?</span>
+
+<span style="color:var(--orange)">[1]</span> <span style="color:var(--text)">Money Movement        (MM)</span>
+<span style="color:var(--orange)">[2]</span> <span style="color:var(--text)">Loan Against Property (LAP)</span>
+<span style="color:var(--orange)">[3]</span> <span style="color:var(--text)">Personal Loans        (PL)</span>
+
+<span style="color:var(--dim)">→ Each option auto-loads that domain's
+  personas, epics, KB, and services</span></pre>
+        <div style="margin-top:10px;font-size:11px;color:var(--dim);">If the user passes an Epic ID directly (e.g. <code style="color:var(--blue)">LAP-Epic-3</code>), Phase 0 auto-selects the matching domain from <code style="color:var(--yellow)">id_prefix</code> — no menu needed.</div>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid rgba(248,81,73,0.2);border-radius:8px;padding:16px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:10px;">Domain Guard — cross-domain hard stop</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:10px;">Fires immediately if the Epic ID prefix doesn't match the selected domain's <code style="color:var(--yellow)">id_prefix</code>. <strong style="color:var(--text)">No files are read. No branches are created. Nothing changes.</strong></div>
+        <pre style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);border-radius:6px;padding:12px;font-size:11.5px;line-height:1.7;"><span style="color:var(--red)">❌ WRONG SKILL — Domain mismatch</span>
+
+<span style="color:var(--dim)">You passed:  </span><span style="color:var(--text)">LAP-Epic-3</span>
+<span style="color:var(--dim)">This skill:  </span><span style="color:var(--text)">MM pipeline (id_prefix: MM-Epic)</span>
+
+<span style="color:var(--dim)">No files read.
+No branches created.
+Nothing changed.</span>
+
+<span style="color:var(--dim)">→ Prevents MM PLAN.md from being
+  generated for a LAP epic and vice versa</span></pre>
+      </div>
+    </div>
+
+    <!-- Add a new team -->
+    <div style="background:rgba(63,185,80,0.04);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:16px;">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--green);margin-bottom:12px;">Adding a new team — one JSON block, zero code changes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+        <div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:6px;">Current: 1 domain</div>
+          <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11.5px;line-height:1.7;"><span style="color:var(--dim)">{</span>
+  <span style="color:var(--cyan)">"MM"</span><span style="color:var(--dim)">: { ... }</span>
+<span style="color:var(--dim)">}</span></pre>
+          <div style="font-size:11px;color:var(--dim);margin-top:8px;">Phase 0 auto-selects MM — no menu shown</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--green);margin-bottom:6px;">After: add LAP team → pipeline works for both instantly</div>
+          <pre style="background:var(--code-bg);border:1px solid rgba(63,185,80,0.2);border-radius:6px;padding:12px;font-size:11.5px;line-height:1.7;"><span style="color:var(--dim)">{</span>
+  <span style="color:var(--cyan)">"MM"</span><span style="color:var(--dim)">: { ... },</span>
+  <span style="color:var(--green)">"LAP"</span><span style="color:var(--dim)">: {</span>
+    <span style="color:var(--dim)">"name":</span>     <span style="color:var(--green)">"Loan Against Property"</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"monorepo":</span> <span style="color:var(--orange)">"~/Incred-Engineers/InCred-..."</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"personas":</span> <span style="color:var(--orange)">"~/...LAP/Knowledge_Base/personas.md"</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"epics_dir":</span><span style="color:var(--orange)">"~/...LAP/Epic_Stories/"</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"id_prefix":</span><span style="color:var(--yellow)">"LAP-Epic"</span><span style="color:var(--dim)">,</span>
+    <span style="color:var(--dim)">"services"</span><span style="color:var(--dim)">: [</span>
+      <span style="color:var(--blue)">"lap-service"</span><span style="color:var(--dim)">,</span>
+      <span style="color:var(--blue)">"application-service"</span><span style="color:var(--dim)">,</span> <span style="color:var(--dim);font-style:italic">← shared</span>
+      <span style="color:var(--blue)">"customer-service"</span>   <span style="color:var(--dim);font-style:italic">← shared</span>
+    <span style="color:var(--dim)">]</span>
+  <span style="color:var(--dim)">}</span>
+<span style="color:var(--dim)">}</span></pre>
+          <div style="font-size:11px;color:var(--dim);margin-top:8px;line-height:1.6;">
+            Note: <code style="color:var(--blue)">application-service</code> and <code style="color:var(--blue)">customer-service</code> are <strong style="color:var(--text)">shared</strong> across MM and LAP — their SERVICE-KB.md is read by both pipelines. Services can appear in multiple domains with no conflict.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ══ PRE-PHASE ══ -->
   <div class="section-banner" style="background:rgba(188,140,255,0.07);border:1px solid rgba(188,140,255,0.2);" id="sec-pre">
