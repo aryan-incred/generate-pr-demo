@@ -175,6 +175,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -193,8 +194,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 
 <!-- OVERVIEW STRIP -->
 <div id="overview">
-  <div class="ov-item"><span class="section-marker" style="background:rgba(121,192,255,0.12);color:var(--cyan);border:1px solid rgba(121,192,255,0.3);">⚙️ Config</span><div class="ov-conn" style="width:12px"></div></div>
-  <div class="ov-item"><div class="ov-dot" style="background:var(--cyan);font-size:8px;width:24px;height:24px;border-radius:4px;">json</div><div class="ov-label">domain-map</div><div class="ov-conn"></div></div>
+  <div class="ov-item" id="toggle-config-btn" onclick="toggleConfig()" title="Click to show domain-map.json — used by /generate-pr Phase 0" style="cursor:pointer;">
+    <span id="config-pill" class="section-marker" style="background:rgba(121,192,255,0.08);color:var(--cyan);border:1px solid rgba(121,192,255,0.25);transition:.2s;user-select:none;">⚙️ domain-map.json ▾</span>
+  </div>
+  <div class="ov-conn" style="width:12px"></div>
   <div class="ov-item"><span class="section-marker" style="background:rgba(188,140,255,0.15);color:var(--purple);border:1px solid rgba(188,140,255,0.3);">PRE</span></div>
   <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">E</div><div class="ov-label">Enrich</div><div class="ov-conn"></div></div>
   <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">S</div><div class="ov-label">Story</div><div class="ov-conn"></div></div>
@@ -223,14 +226,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 <!-- BODY -->
 <div class="arch-body">
 
-  <!-- ══ DOMAIN-MAP CONFIG ══ -->
-  <div style="background:rgba(121,192,255,0.04);border:1px solid rgba(121,192,255,0.2);border-radius:12px;padding:24px;margin-bottom:36px;" id="sec-config" class="phase-wrap visible">
+  <!-- ══ DOMAIN-MAP CONFIG (collapsed by default, toggle via overview strip) ══ -->
+  <div style="display:none;background:rgba(121,192,255,0.04);border:1px solid rgba(121,192,255,0.2);border-radius:12px;padding:24px;margin-bottom:36px;animation:fadeIn .3s ease;" id="sec-config">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
       <span style="font-size:22px;">⚙️</span>
-      <div>
+      <div style="flex:1;">
         <div style="font-size:16px;font-weight:800;color:var(--cyan);">domain-map.json — Configuration Registry</div>
-        <div style="font-size:12px;color:var(--dim);margin-top:2px;">Lives at <code style="background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:3px;color:var(--blue);">~/.claude/commands/generate-pr/domain-map.json</code> &nbsp;·&nbsp; Read first by every /generate-pr skill — makes the entire pipeline domain-agnostic</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:2px;">
+          Lives at <code style="background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:3px;color:var(--blue);">~/.claude/commands/generate-pr/domain-map.json</code>
+          &nbsp;·&nbsp; <strong style="color:var(--orange)">Used by /generate-pr Phase 0 only</strong> — makes the pipeline domain-agnostic
+        </div>
       </div>
+      <button onclick="toggleConfig()" style="background:rgba(121,192,255,0.1);border:1px solid rgba(121,192,255,0.3);color:var(--cyan);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;">✕ Close</button>
     </div>
 
     <!-- Two-column: annotated JSON + key table -->
@@ -933,6 +940,25 @@ No menu shown</span></pre>
 </div><!-- /arch-body -->
 
 <script>
+// domain-map.json toggle
+function toggleConfig() {
+  const sec = document.getElementById('sec-config');
+  const pill = document.getElementById('config-pill');
+  const isOpen = sec.style.display !== 'none';
+  if (isOpen) {
+    sec.style.display = 'none';
+    pill.textContent = '⚙️ domain-map.json ▾';
+    pill.style.background = 'rgba(121,192,255,0.08)';
+    pill.style.borderColor = 'rgba(121,192,255,0.25)';
+  } else {
+    sec.style.display = 'block';
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    pill.textContent = '⚙️ domain-map.json ▴';
+    pill.style.background = 'rgba(121,192,255,0.2)';
+    pill.style.borderColor = 'rgba(121,192,255,0.6)';
+  }
+}
+
 // Scroll-triggered animations via IntersectionObserver
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
