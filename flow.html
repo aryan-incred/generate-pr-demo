@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InCred MM · /generate-pr Internal Flow</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+/* ── Light mode default ── */
+:root{
+  --bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;
+  --text:#24292F;--dim:#57606A;
+  --orange:#D4460F;--blue:#0550AE;--green:#1A7F37;
+  --red:#CF222E;--yellow:#7A5A00;--purple:#6639BA;
+  --cyan:#0969DA;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;line-height:1.6;}
+
+.flow-header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.fh-left{display:flex;align-items:center;gap:14px;}
+.fh-back{color:var(--dim);text-decoration:none;font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:5px;}
+.fh-back:hover{color:var(--text);}
+.fh-title{font-size:14px;font-weight:700;}
+.fh-sub{font-size:11px;color:var(--dim);}
+.fh-right{display:flex;align-items:center;gap:8px;}
+.fh-btn{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid;cursor:pointer;}
+.theme-btn{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.15);color:#24292F;padding:4px 9px;font-size:13px;line-height:1;cursor:pointer;}
+.theme-btn:hover{background:rgba(0,0,0,.1);}
+
+/* Legend strip */
+.legend{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:8px 28px;display:flex;align-items:center;gap:18px;overflow-x:auto;
+  scrollbar-width:none;flex-wrap:nowrap;
+}
+.legend::-webkit-scrollbar{display:none;}
+.lg-item{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;color:var(--dim);}
+.lg-box{width:14px;height:14px;border-radius:3px;border:1px solid;flex-shrink:0;}
+
+/* Diagram area */
+.flow-body{padding:32px 24px 60px;max-width:1300px;margin:0 auto;}
+.flow-title-block{margin-bottom:24px;}
+.flow-title-block h2{font-size:18px;font-weight:800;color:var(--text);}
+.flow-title-block p{font-size:12px;color:var(--dim);margin-top:4px;}
+
+.diagram-scroll{
+  background:#FFFFFF;border:1px solid var(--border);border-radius:10px;
+  padding:28px;overflow:auto;min-height:300px;
+}
+
+/* Phase annotations table */
+.ann-section{margin-top:40px;}
+.ann-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:16px;}
+.ann-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.ann-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;border-left-width:3px;border-left-style:solid;}
+.ann-phase{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.ann-heading{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.ann-detail{font-size:11px;color:var(--dim);line-height:1.55;}
+.ann-retry{font-size:10px;margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(207,34,46,0.06);border:1px solid rgba(207,34,46,0.2);color:var(--red);}
+
+/* Dark mode */
+body.dark{
+  --bg:#0D1117;--surface:#161B22;--border:#21262D;
+  --text:#C9D1D9;--dim:#6E7681;
+  --orange:#F5821E;--blue:#58A6FF;--green:#3FB950;
+  --red:#F85149;--yellow:#E3B341;--purple:#BC8CFF;--cyan:#79C0FF;
+}
+body.dark .diagram-scroll{background:#0A0D12;}
+body.dark .theme-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.85);}
+body.dark .ann-retry{background:rgba(248,81,73,0.08);border-color:rgba(248,81,73,0.2);}
+</style>
+</head>
+<body>
+
+<header class="flow-header">
+  <div class="fh-left">
+    <a href="architecture.html" class="fh-back">← Architecture</a>
+    <div>
+      <div class="fh-title">/generate-pr — Internal Flow Diagram</div>
+      <div class="fh-sub">Every phase · every decision · every retry loop · based on actual skill source</div>
+    </div>
+  </div>
+  <div class="fh-right">
+    <button class="theme-btn fh-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <a href="index.html" class="fh-btn" style="background:rgba(213,70,15,.1);color:var(--orange);border-color:rgba(213,70,15,.25);">▶ Live Demo</a>
+  </div>
+</header>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="lg-item"><div class="lg-box" style="background:#EFF6FF;border-color:#3B82F6"></div>Phase step</div>
+  <div class="lg-item"><div class="lg-box" style="background:#EDE9FE;border-color:#7C3AED"></div>Start / End</div>
+  <div class="lg-item"><div class="lg-box" style="background:#F0FDF4;border-color:#16A34A"></div>Pass / Output</div>
+  <div class="lg-item"><div class="lg-box" style="background:#FFF1F2;border-color:#F43F5E"></div>Block / Stop</div>
+  <div class="lg-item"><div class="lg-box" style="background:#FFF7ED;border-color:#EA580C"></div>Human gate 🔒</div>
+  <div class="lg-item"><div class="lg-box" style="background:#FEFCE8;border-color:#CA8A04"></div>Decision ◇</div>
+  <div class="lg-item"><div class="lg-box" style="background:#F0F9FF;border-color:#0EA5E9;border-style:dashed"></div>Agent delegation</div>
+  <div class="lg-item" style="font-size:11px;">— solid: happy path &nbsp;·&nbsp; -.-> dashed: retry/re-run</div>
+</div>
+
+<div class="flow-body">
+  <div class="flow-title-block">
+    <h2>Complete /generate-pr Internal Architecture</h2>
+    <p>Phases 0–7 · 3 human gates · agent delegations · decision branches · retry loops · hard stops</p>
+  </div>
+
+  <!-- Mermaid diagram -->
+  <div class="diagram-scroll">
+    <div class="mermaid">
+flowchart TD
+  classDef start   fill:#EDE9FE,stroke:#7C3AED,color:#3B0764,font-weight:700
+  classDef step    fill:#EFF6FF,stroke:#3B82F6,color:#1E3A5F
+  classDef agent   fill:#F0F9FF,stroke:#0EA5E9,color:#0C4A6E,font-style:italic
+  classDef pass    fill:#F0FDF4,stroke:#16A34A,color:#14532D,font-weight:600
+  classDef block   fill:#FFF1F2,stroke:#F43F5E,color:#881337
+  classDef gate    fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,font-weight:700
+  classDef dec     fill:#FEFCE8,stroke:#CA8A04,color:#713F12
+  classDef imp     fill:#FFF7ED,stroke:#F97316,color:#7C2D12,font-weight:700
+
+  START(["🚀 /generate-pr\nDeveloper runs command"]):::start
+
+  subgraph P0["Phase 0 · Scope + Story Selection"]
+    DOMAIN["Read domain-map.json\nIf >1 team → numbered menu\nAuto-select if Epic ID passed"]:::step
+    PULL["git pull main\nRead EPIC-REGISTRY.md\nShow active epics only\nIn Progress · In Pipeline · Reserved"]:::step
+    EMAIL{{"User email\nin personas.md?"}}:::dec
+    EMAIL_STOP(["❌ Stop\nContact Tech Lead\nto add to personas"]):::block
+    STORY_SEL["Select story\nfrom epic folder\nShows current state per story"]:::step
+    GAP_CHK{{"Story blocked\nby GAP-REPORT?"}}:::dec
+    GAP_STOP(["❌ Stop → Slack #mm-dev-pm\nPM must fix gaps\nin story first"]):::block
+    P5_CHK{{"BUILD-EVIDENCE\nalready on main?"}}:::dec
+    SHIP_REDIR(["→ Use /mm-ship\nStory past Phase 5"]):::block
+    RESUME["Check artifacts on branch\nPLAN.md on main? Tests committed?\nOpen PRs? PR changes requested?\nShow pipeline state + resume menu"]:::step
+    CHANGES{{"PR has changes\nrequested?"}}:::dec
+    REV_MODE["Enter revision mode\nAddress review comments"]:::step
+  end
+
+  subgraph P1["Phase 1 · Requirements Gate"]
+    GAP_EXISTS{{"GAP-REPORT.md\nexists on main?"}}:::dec
+    SCOPING["@mm-scoping-analyst\nRe-validate all ACs\nSr. PM 6-point checklist\nExtract: ACs · edge cases\ncompliance flags"]:::agent
+    P1_FAIL(["❌ FAIL — N gaps found\nSlack #mm-dev-pm → PM\nFix story → re-run"]):::block
+    P1_PASS["✅ Phase 1 complete\nN ACs · N edge cases\nCompliance flag extracted"]:::pass
+  end
+
+  subgraph P2["Phase 2 · Technical Blueprint   🔒 Gate 1"]
+    PLAN_CHK{{"PLAN.md\non main?"}}:::dec
+    STORY_PR{{"Story PR\nmerged to main?"}}:::dec
+    PM_STOP(["❌ Stop → Slack #mm-dev-pm\nPM must run\n/mm-story → Submit"]):::block
+    PLANNER["@mm-codebase-planner\nRead SERVICE-KB.md per service\nTrace call chains\nResolve RESOLVE-IN-PLAN items\nGenerate PLAN.md (3 sections)\n+ Mermaid seq diagram\n+ p95 targets"]:::agent
+    G1{{"🔒 Gate 1\nPM: review Section 1\nTech Lead: review Section 2\n5-point checklist"}}:::gate
+    G1_REV["Revise PLAN.md\n@mm-codebase-planner\nIterate until approved"]:::step
+    P2_PUSH["Push PLAN.md to branch\nRaise PR to main\nAssign reviewers from personas\nSlack notify? → #mm-dev-pm"]:::step
+    WAIT_MERGE{{"Gate 1 PR\nmerged?"}}:::dec
+    SLACK_WAIT(["⏳ Wait\n→ Slack to PM + TL\nRe-run /generate-pr\nwhen merged"]):::block
+  end
+
+  subgraph P3["Phase 3 · API Contract + TDD Red"]
+    API_CONTRACT["Write API Contract\nfrom extracted ACs\nMethod · endpoint · request\nresponse · errors · p95 target"]:::step
+    TEST_ARCH["@mm-test-architect\nWrite ALL tests as FAILING\nScaffolded from PLAN.md Section 3\nUnit + integration + regression"]:::agent
+    RED_CHK{{"Any test\npasses unexpectedly?"}}:::dec
+    RED_INVESTIGATE["Investigate:\nFeature already exists?\nTest wrong?\nPartial impl on branch?"]:::step
+    P3_PASS["✅ Phase 3 Red confirmed\nAll N tests FAIL as expected\nBehaviour contract locked"]:::pass
+  end
+
+  subgraph P4["Phase 4 · Implementation   🔒 Gate 2"]
+    IMP_CONFIRM["Pre-implementation confirmation\nBuild sequence from PLAN.md\nUser approves before code starts"]:::step
+    IMP_CHK{{"PARTIAL-REUSE:\nbody changes to\nexisting function?"}}:::dec
+    IMP_FLAG{{"⚑ FUNCTION IMPACT FLAG\nCallers found in other services\nBlock until all reviewed"}}:::imp
+    IMP_PROCEED["Option: review all callers\nor create new function\nor stop for team discussion"]:::step
+    IMPLEMENTER["@mm-implementer\nChunk-by-chunk implementation\nRun tests after every chunk\nOnly files in PLAN.md Section 2"]:::agent
+    CHUNK{{"Per-chunk gate\nApprove / reject\neach chunk"}}:::gate
+    CHUNK_REJ["Revise chunk\n@mm-implementer retries"]:::step
+    G2{{"🔒 Gate 2\nCannot self-approve\nEligible: peer dev or Tech Lead\nAll impact flags reviewed?"}}:::gate
+    G2_REJ["Revise implementation\n@mm-implementer"]:::step
+    BUILD_EV["Generate BUILD-EVIDENCE.md\nTests · coverage · lint · p95\nWritten to monorepo"]:::pass
+  end
+
+  subgraph P5["Phase 5 · Quality Gates"]
+    QA_PREP["Check package.json scripts\nDoes 'lint' exist? 'format'?\nSkip silently if not supported"]:::step
+    QAGK["@mm-qa-gatekeeper\nUnit · Integration · Lint\nFormat · Coverage · p95 · E2E\nAll run against impl branch"]:::agent
+    QA_FAIL{{"Any gate\nfails?"}}:::dec
+    QA_FIX["Show root cause\nBlock until fix applied\nRe-run failed gate"]:::step
+    QA_EV["✅ All gates green\nGenerate QA-EVIDENCE.md"]:::pass
+  end
+
+  subgraph P6["Phase 6 · PR Assembly   🔒 Gate 3"]
+    SIGNOFF{{"8-point sign-off\nAll green?"}}:::dec
+    SIGNOFF_FIX["Fix missing item\nbefore proceeding"]:::step
+    G3{{"🔒 Gate 3\nCreate Implementation PR\nAssignee + reviewers\nauto-assigned from personas.md"}}:::gate
+    PR_RAISED["PR raised\nAttach: PLAN.md + BUILD-EVIDENCE\n+ QA-EVIDENCE\nSlack #mm-dev-qa"]:::pass
+  end
+
+  subgraph P7["Phase 7 · KB Update PR"]
+    KB["KB Update PR → monorepo main\nBUILD-EVIDENCE.md\nQA-EVIDENCE.md\nEPIC-REGISTRY → In Pipeline\nRetro entry\nKB drafts marked DRAFT-PM-REVIEW\nSlack notify PM → #mm-dev-pm"]:::step
+  end
+
+  DONE(["🎉 Pipeline Complete\nImpl PR + KB PR raised\nPENDING: peer review + PM review\nNEXT: /mm-ship --qa"]):::start
+
+  %% ─── Main happy path ───
+  START --> DOMAIN --> PULL --> EMAIL
+  EMAIL -->|"found ✅"| STORY_SEL
+  EMAIL -->|"not found ❌"| EMAIL_STOP
+  STORY_SEL --> GAP_CHK
+  GAP_CHK -->|"not blocked"| P5_CHK
+  GAP_CHK -->|"blocked ❌"| GAP_STOP
+  P5_CHK -->|"no"| RESUME
+  P5_CHK -->|"yes"| SHIP_REDIR
+  RESUME --> CHANGES
+  CHANGES -->|"yes — revision mode"| REV_MODE
+  CHANGES -->|"no — continue"| GAP_EXISTS
+  REV_MODE --> GAP_EXISTS
+
+  GAP_EXISTS -->|"no report → already valid"| P1_PASS
+  GAP_EXISTS -->|"not validated yet"| SCOPING
+  SCOPING -->|"PASS ✅"| P1_PASS
+  SCOPING -->|"FAIL ❌"| P1_FAIL
+  P1_FAIL -.->|"fix story\nre-run /generate-pr"| START
+
+  P1_PASS --> PLAN_CHK
+  PLAN_CHK -->|"exists"| G1
+  PLAN_CHK -->|"missing"| STORY_PR
+  STORY_PR -->|"merged ✅"| PLANNER
+  STORY_PR -->|"not merged ❌"| PM_STOP
+  PLANNER --> G1
+  G1 -->|"[2] Reject / [3] Comment"| G1_REV
+  G1_REV -->|"revised"| G1
+  G1 -->|"[1] Approve"| P2_PUSH
+  P2_PUSH --> WAIT_MERGE
+  WAIT_MERGE -->|"merged ✅"| API_CONTRACT
+  WAIT_MERGE -->|"not yet ❌"| SLACK_WAIT
+  SLACK_WAIT -.->|"re-run /generate-pr\nwhen merged"| WAIT_MERGE
+
+  API_CONTRACT --> TEST_ARCH --> RED_CHK
+  RED_CHK -->|"all fail ✅"| P3_PASS
+  RED_CHK -->|"some pass ❌"| RED_INVESTIGATE
+  RED_INVESTIGATE -.->|"revise tests"| TEST_ARCH
+
+  P3_PASS --> IMP_CONFIRM --> IMP_CHK
+  IMP_CHK -->|"no body changes"| IMPLEMENTER
+  IMP_CHK -->|"body changes found"| IMP_FLAG
+  IMP_FLAG -->|"[1] reviewed · no breakage"| IMP_PROCEED
+  IMP_FLAG -->|"[3] stop · team discussion"| G2_REJ
+  IMP_PROCEED --> IMPLEMENTER
+  IMPLEMENTER --> CHUNK
+  CHUNK -->|"[2] Reject"| CHUNK_REJ
+  CHUNK_REJ -.->|"revise"| IMPLEMENTER
+  CHUNK -->|"[1] Approve"| G2
+  G2 -->|"[2] Reject"| G2_REJ
+  G2_REJ -.->|"revise\nimplementation"| IMPLEMENTER
+  G2 -->|"[1] Approve"| BUILD_EV
+
+  BUILD_EV --> QA_PREP --> QAGK --> QA_FAIL
+  QA_FAIL -->|"failure ❌"| QA_FIX
+  QA_FIX -.->|"fix + re-run"| QAGK
+  QA_FAIL -->|"all green ✅"| QA_EV
+
+  QA_EV --> SIGNOFF
+  SIGNOFF -->|"red item"| SIGNOFF_FIX
+  SIGNOFF_FIX --> SIGNOFF
+  SIGNOFF -->|"all green ✅"| G3
+  G3 -->|"[2] Cancel"| PR_RAISED
+  G3 -->|"[1] Create PR"| PR_RAISED
+  PR_RAISED --> KB --> DONE
+    </div>
+  </div>
+
+  <!-- Phase annotation cards -->
+  <div class="ann-section">
+    <div class="ann-title">Phase-by-Phase — Decision Points &amp; Retry Logic</div>
+    <div class="ann-grid">
+
+      <div class="ann-card" style="border-left-color:var(--blue)">
+        <div class="ann-phase" style="color:var(--blue)">Phase 0 · Story Selection</div>
+        <div class="ann-heading">Branch detection + Resume</div>
+        <div class="ann-detail">Reads domain-map.json first. Checks EPIC-REGISTRY for active stories only (not Shipped/Cancelled). Cross-checks user email against personas.md before showing any story.</div>
+        <div class="ann-retry">🔁 Retry: PR has "changes requested" → enters revision mode → continues to Phase 1</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--red)">
+        <div class="ann-phase" style="color:var(--red)">Phase 0 · Hard Stops</div>
+        <div class="ann-heading">3 conditions that exit immediately</div>
+        <div class="ann-detail">
+          <strong style="color:var(--text)">①</strong> Email not in personas → stop, contact Tech Lead.<br>
+          <strong style="color:var(--text)">②</strong> Story has unresolved GAP-REPORT → stop, PM must fix story.<br>
+          <strong style="color:var(--text)">③</strong> BUILD-EVIDENCE already on main → redirect to /mm-ship.
+        </div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--blue)">
+        <div class="ann-phase" style="color:var(--blue)">Phase 1 · Requirements Gate</div>
+        <div class="ann-heading">@mm-scoping-analyst validates</div>
+        <div class="ann-detail">If story was already validated (no GAP-REPORT on main), skips directly to Phase 1 Pass. Otherwise delegates to @mm-scoping-analyst with full story content — does not re-read files.</div>
+        <div class="ann-retry">🔁 On FAIL: GAP-REPORT.md created, Slack message to PM, developer re-runs /generate-pr after fix</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--orange)">
+        <div class="ann-phase" style="color:var(--orange)">Phase 2 · Technical Blueprint</div>
+        <div class="ann-heading">PLAN.md is the shared contract</div>
+        <div class="ann-detail">@mm-codebase-planner reads SERVICE-KB.md from every service, traces call chains, resolves RESOLVE-IN-PLAN items, generates 3-section PLAN.md with Mermaid sequence diagram and p95 targets.</div>
+        <div class="ann-retry">🔁 On Gate 1 rejection: @mm-codebase-planner revises — loops until [1] Approve. After approval, PR raised and waits for merge before Phase 3.</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--red)">
+        <div class="ann-phase" style="color:var(--red)">Phase 3 · TDD Red</div>
+        <div class="ann-heading">Tests MUST fail — confirmed by running suite</div>
+        <div class="ann-detail">@mm-test-architect writes all tests from PLAN.md Section 3. Tests are run immediately — if any pass, the pipeline stops with an investigation menu: feature already exists? test wrong? partial impl?</div>
+        <div class="ann-retry">🔁 On unexpected pass: investigate root cause → revise tests → @mm-test-architect re-writes → re-run</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--orange)">
+        <div class="ann-phase" style="color:var(--orange)">Phase 4 · Function Impact Flag</div>
+        <div class="ann-heading">Fires on existing function body change only</div>
+        <div class="ann-detail">Checked before implementation starts. For every PARTIAL-REUSE function in PLAN.md, greps all domain services for callers. If callers found in other services: hard block until engineer confirms each one, or chooses to add a new function instead.</div>
+        <div class="ann-retry">🔁 Stop for team discussion: developer exits, discusses with TL, then re-runs from Phase 4</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--green)">
+        <div class="ann-phase" style="color:var(--green)">Phase 4 · Implementation</div>
+        <div class="ann-heading">Chunk-by-chunk with per-chunk gates</div>
+        <div class="ann-detail">@mm-implementer only touches files listed in PLAN.md Section 2. After each chunk: runs tests, shows pass count, stops for approval. Gate 2 cannot be self-approved — requires a peer or Tech Lead.</div>
+        <div class="ann-retry">🔁 Chunk rejected: revise → @mm-implementer retries same chunk. Gate 2 rejected: revise → full re-run of @mm-implementer</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--yellow)">
+        <div class="ann-phase" style="color:var(--yellow)">Phase 5 · Quality Gates</div>
+        <div class="ann-heading">Hard block on any failure</div>
+        <div class="ann-detail">Checks package.json before running lint or format — skips silently if script not registered. Runs: unit tests, integration tests, lint, format, coverage, p95 estimate, E2E tests. Any failure shows root cause and blocks.</div>
+        <div class="ann-retry">🔁 Fix failure → re-run the specific failing gate (not all gates)</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--yellow)">
+        <div class="ann-phase" style="color:var(--yellow)">Phase 6 · PR Assembly</div>
+        <div class="ann-heading">8-point sign-off before PR creation</div>
+        <div class="ann-detail">PLAN.md ✓ · service bindings ✓ · sequence diagram ✓ · all tests green ✓ · no skips ✓ · impact flags reviewed ✓ · BUILD-EVIDENCE.md ✓ · QA-EVIDENCE.md ✓. Any red item → cannot proceed.</div>
+        <div class="ann-retry">🔁 Red sign-off item: fix it, re-check sign-off list, then continue to Gate 3</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--purple)">
+        <div class="ann-phase" style="color:var(--purple)">Phase 7 · KB Update PR</div>
+        <div class="ann-heading">Close the feedback loop</div>
+        <div class="ann-detail">Creates a separate PR to monorepo main with BUILD-EVIDENCE, QA-EVIDENCE, EPIC-REGISTRY status update (→ In Pipeline), retrospective entry, and KB drafts marked "DRAFT — pending PM review". PM is notified on #mm-dev-pm.</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--cyan)">
+        <div class="ann-phase" style="color:var(--cyan)">After /generate-pr</div>
+        <div class="ann-heading">Next: /mm-ship --qa</div>
+        <div class="ann-detail">Once the implementation PR and KB PR are reviewed and merged, developer runs /mm-ship --qa to promote the story to the QA environment. @mm-qa-gatekeeper runs integration tests against live services and writes QA-EVIDENCE.md.</div>
+      </div>
+
+      <div class="ann-card" style="border-left-color:var(--red)">
+        <div class="ann-phase" style="color:var(--red)">Error Handling — all cases</div>
+        <div class="ann-heading">Every error state has a Slack message</div>
+        <div class="ann-detail">Domain not registered → stop, explain how to add. Story GAP-REPORT → Slack to PM. Phase 2 PR not merged → Slack to PM + TL with PR link. No eligible approver → flag, add to personas. GitHub unavailable → print manual gh pr create command.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Mermaid — light theme with larger font
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  securityLevel: 'loose',
+  flowchart: { curve: 'basis', htmlLabels: false, padding: 20, nodeSpacing: 50, rankSpacing: 60 },
+  themeVariables: {
+    background: '#FFFFFF',
+    primaryColor: '#EEF4FF',
+    primaryTextColor: '#1A1A2E',
+    primaryBorderColor: '#5B8DEF',
+    lineColor: '#8B949E',
+    secondaryColor: '#F0FFF4',
+    tertiaryColor: '#FFFBEB',
+    clusterBkg: '#F8FAFC',
+    clusterBorder: '#CBD5E1',
+    edgeLabelBackground: '#FFFFFF',
+    fontFamily: '-apple-system, "Segoe UI", sans-serif',
+    fontSize: '15px'
+  }
+});
+
+function toggleTheme(){
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('gpr-theme', isDark ? 'dark' : 'light');
+}
+(function(){
+  if(localStorage.getItem('gpr-theme') === 'dark'){
+    document.body.classList.add('dark');
+    const b = document.getElementById('themeBtn');
+    if(b) b.textContent = '☀️';
+  }
+})();
+</script>
+</body>
+</html>

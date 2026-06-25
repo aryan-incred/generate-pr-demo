@@ -11,6 +11,7 @@
   --orange: #F5821E; --blue:    #58A6FF; --green:  #3FB950;
   --red:    #F85149; --yellow:  #E3B341; --purple: #BC8CFF;
   --cyan:   #79C0FF; --pink:    #FF7EB3;
+  --code-bg:#0A0D12; --cmd-bg:rgba(0,0,0,0.3); --cmd-border:rgba(255,255,255,0.08);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -35,8 +36,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 
 /* ── OVERVIEW STRIP ── */
 #overview{
-  position:sticky;top:55px;z-index:40;background:rgba(13,17,23,0.95);
-  backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+  position:sticky;top:var(--header-h,74px);z-index:40;background:var(--surface);
+  border-bottom:1px solid var(--border);
   padding:10px 32px;display:flex;align-items:center;gap:0;overflow-x:auto;
   scrollbar-width:none;
 }
@@ -106,7 +107,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 }
 .phase-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.3);transform:translateY(-1px);}
 .pc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;}
-.pc-cmd{font-family:'Courier New',monospace;font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,0.3);flex-shrink:0;margin-top:2px;}
+.pc-cmd{font-family:'Courier New',monospace;font-size:10px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--cmd-bg);border:1px solid var(--cmd-border);flex-shrink:0;margin-top:3px;letter-spacing:.3px;line-height:1.8;}
 .pc-title{font-size:14px;font-weight:700;}
 .pc-desc{font-size:12px;color:var(--dim);margin-bottom:8px;}
 .pc-meta{display:flex;gap:6px;flex-wrap:wrap;}
@@ -178,10 +179,17 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI'
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .theme-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);border-radius:6px;padding:4px 9px;font-size:13px;cursor:pointer;line-height:1;}
 .theme-btn:hover{background:rgba(255,255,255,.2);}
-body.light{--bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;--text:#24292F;--dim:#57606A;--code-bg:#F0F2F5;}
-body.light .detail-box{background:#F0F2F5;}
-body.light pre{color:#24292F;background:#F0F2F5;}
+body.light{--bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;--text:#24292F;--dim:#57606A;--code-bg:#EEF0F4;--cmd-bg:#E4E8EF;--cmd-border:rgba(0,0,0,0.18);}
+body.light .detail-box{background:#EEF0F4;}
+body.light pre{color:#24292F !important;background:#EEF0F4 !important;}
 body.light pre .kw{color:#CF222E;}pre .cmt{color:#57606A;}pre .str{color:#0550AE;}pre .fn{color:#8250DF;}
+body.light .phase-card{background:var(--surface);}
+body.light .pre-card{background:var(--surface);}
+body.light .gate-card{background:rgba(245,130,30,0.04);}
+body.light .section-banner{background:var(--surface) !important;border-color:var(--border) !important;}
+body.light .section-banner .sb-tag{background:var(--surface) !important;border-color:var(--border) !important;}
+body.light #overview{background:var(--surface);}
+body.light .cs-item{background:var(--surface);}
 </style>
 </head>
 <body>
@@ -197,6 +205,7 @@ body.light pre .kw{color:#CF222E;}pre .cmt{color:#57606A;}pre .str{color:#0550AE
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <a href="flow.html" class="ah-demo-btn" style="background:rgba(121,192,255,0.12);color:var(--cyan);border-color:rgba(121,192,255,0.3);margin-right:6px;">📊 Flow</a>
     <a href="index.html" class="ah-demo-btn">▶ Watch Live Demo</a>
   </div>
 </header>
@@ -946,9 +955,18 @@ No menu shown</span></pre>
     </div>
   </div>
 
+
 </div><!-- /arch-body -->
 
 <script>
+// Set overview strip top based on actual header height
+(function(){
+  const hdr = document.querySelector('.arch-header');
+  const setH = () => { if(hdr) document.documentElement.style.setProperty('--header-h', hdr.offsetHeight + 'px'); };
+  setH();
+  window.addEventListener('resize', setH);
+})();
+
 // Theme toggle
 function toggleTheme(){const l=document.body.classList.toggle('light');document.getElementById('themeBtn').textContent=l?'🌙':'☀️';localStorage.setItem('gpr-theme',l?'light':'dark');}
 (function(){if(localStorage.getItem('gpr-theme')==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='🌙';}})();
