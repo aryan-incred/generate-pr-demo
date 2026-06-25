@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InCred MM · Pipeline Architecture</title>
+<style>
+:root {
+  --bg:     #0D1117; --surface: #161B22; --border: #21262D;
+  --text:   #C9D1D9; --dim:     #6E7681;
+  --orange: #F5821E; --blue:    #58A6FF; --green:  #3FB950;
+  --red:    #F85149; --yellow:  #E3B341; --purple: #BC8CFF;
+  --cyan:   #79C0FF; --pink:    #FF7EB3;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;line-height:1.6;}
+
+/* ── HEADER ── */
+.arch-header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.ah-back{color:var(--dim);text-decoration:none;font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:5px;}
+.ah-back:hover{color:var(--text);}
+.ah-title{font-size:15px;font-weight:700;color:var(--text);}
+.ah-sub{font-size:11px;color:var(--dim);}
+.ah-demo-btn{
+  padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;
+  background:rgba(245,130,30,0.15);color:var(--orange);
+  border:1px solid rgba(245,130,30,0.35);text-decoration:none;
+}
+.ah-demo-btn:hover{background:rgba(245,130,30,0.25);}
+
+/* ── OVERVIEW STRIP ── */
+#overview{
+  position:sticky;top:55px;z-index:40;background:rgba(13,17,23,0.95);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+  padding:10px 32px;display:flex;align-items:center;gap:0;overflow-x:auto;
+  scrollbar-width:none;
+}
+#overview::-webkit-scrollbar{display:none;}
+.ov-item{display:flex;align-items:center;gap:0;flex-shrink:0;}
+.ov-dot{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#000;
+  transition:transform .2s, box-shadow .2s;cursor:default;
+}
+.ov-label{font-size:10px;color:var(--dim);margin:0 4px;white-space:nowrap;}
+.ov-conn{width:24px;height:1px;background:var(--border);flex-shrink:0;}
+.ov-gate{
+  width:16px;height:16px;background:var(--orange);
+  transform:rotate(45deg);border-radius:2px;flex-shrink:0;margin:0 4px;
+}
+.section-marker{
+  padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;
+  margin:0 6px;flex-shrink:0;letter-spacing:.5px;
+}
+
+/* ── MAIN CONTAINER ── */
+.arch-body{max-width:860px;margin:0 auto;padding:40px 24px 80px;}
+
+/* ── SECTION BANNER ── */
+.section-banner{
+  border-radius:10px;padding:16px 22px;margin:40px 0 28px;
+  display:flex;align-items:center;gap:14px;
+}
+.sb-icon{font-size:22px;}
+.sb-title{font-size:16px;font-weight:800;letter-spacing:.3px;}
+.sb-desc{font-size:12px;margin-top:2px;}
+.sb-tag{margin-left:auto;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+
+/* ── PIPELINE TRACK ── */
+.pipeline-track{
+  position:relative;
+  padding-left:52px;
+}
+.pipeline-track::before{
+  content:'';position:absolute;left:13px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(to bottom,var(--purple) 0%,var(--blue) 18%,var(--orange) 32%,var(--red) 42%,var(--green) 52%,var(--yellow) 62%,var(--cyan) 75%,var(--green) 90%,var(--purple) 100%);
+  opacity:.4;border-radius:2px;
+}
+
+/* ── PHASE CARD ── */
+.phase-wrap{
+  position:relative;margin-bottom:16px;
+  opacity:0;transform:translateX(-20px);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.phase-wrap.visible{opacity:1;transform:none;}
+
+.phase-dot{
+  position:absolute;left:-40px;top:18px;
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#0D1117;
+  box-shadow:0 0 0 3px var(--bg);
+  z-index:2;
+}
+.phase-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;border-left-width:3px;border-left-style:solid;
+  transition:box-shadow .2s, transform .2s;cursor:default;
+}
+.phase-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.3);transform:translateY(-1px);}
+.pc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.pc-cmd{font-family:'Courier New',monospace;font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,0.3);flex-shrink:0;margin-top:2px;}
+.pc-title{font-size:14px;font-weight:700;}
+.pc-desc{font-size:12px;color:var(--dim);margin-bottom:8px;}
+.pc-meta{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;}
+.tag-agent { background:rgba(88,166,255,0.1); color:var(--blue);   border:1px solid rgba(88,166,255,0.2); }
+.tag-artifact{ background:rgba(245,130,30,0.1); color:var(--orange); border:1px solid rgba(245,130,30,0.2); }
+.tag-who  { background:rgba(188,140,255,0.1); color:var(--purple); border:1px solid rgba(188,140,255,0.2); }
+
+/* Pre-phase horizontal row */
+.pre-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:28px;}
+.pre-card{
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--purple);
+  border-radius:10px;padding:14px 16px;
+  opacity:0;transform:translateY(16px);transition:.5s ease;
+}
+.pre-card.visible{opacity:1;transform:none;}
+.pre-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.3);}
+.pre-num{font-size:10px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.pre-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.pre-cmd{font-family:'Courier New',monospace;font-size:11px;color:var(--purple);margin-bottom:6px;}
+.pre-desc{font-size:11px;color:var(--dim);}
+
+/* ── GATE DIAMOND ── */
+.gate-wrap{
+  position:relative;padding-left:52px;margin:22px 0;
+  opacity:0;transform:scale(.9);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.gate-wrap.visible{opacity:1;transform:none;}
+.gate-dot{
+  position:absolute;left:-2px;top:50%;transform:translateY(-50%) rotate(45deg);
+  width:32px;height:32px;background:var(--orange);border-radius:4px;
+  box-shadow:0 0 0 3px var(--bg), 0 0 16px rgba(245,130,30,0.4);
+  animation:gatePulse 2.5s ease-in-out infinite;z-index:2;
+}
+@keyframes gatePulse{
+  0%,100%{box-shadow:0 0 0 3px var(--bg), 0 0 8px rgba(245,130,30,0.3);}
+  50%     {box-shadow:0 0 0 3px var(--bg), 0 0 20px rgba(245,130,30,0.6);}
+}
+.gate-card{
+  background:rgba(245,130,30,0.06);border:1px solid rgba(245,130,30,0.3);
+  border-radius:10px;padding:14px 18px;
+  display:flex;align-items:center;gap:16px;
+}
+.gate-icon{font-size:18px;flex-shrink:0;}
+.gate-title{font-size:13px;font-weight:700;color:var(--orange);}
+.gate-sub{font-size:11px;color:var(--dim);margin-top:2px;}
+.gate-reviewers{margin-left:auto;text-align:right;font-size:11px;color:var(--dim);}
+.gate-reviewers strong{color:var(--text);display:block;}
+
+/* ── COMPLETION BADGE ── */
+.completion{
+  text-align:center;padding:40px 20px;
+  opacity:0;transform:translateY(20px);transition:.6s ease;
+}
+.completion.visible{opacity:1;transform:none;}
+.comp-icon{font-size:48px;margin-bottom:12px;}
+.comp-title{font-size:22px;font-weight:800;color:var(--green);margin-bottom:6px;}
+.comp-sub{font-size:13px;color:var(--dim);}
+.comp-stats{display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap;}
+.cs-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;}
+.cs-val{font-size:20px;font-weight:700;color:var(--orange);}
+.cs-lbl{font-size:10px;color:var(--dim);margin-top:2px;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="arch-header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="index.html" class="ah-back">← Demo</a>
+    <div>
+      <div class="ah-title">InCred MM · Agentic SDLC Pipeline Architecture</div>
+      <div class="ah-sub">From idea to production — one micropod sprint with Claude Code</div>
+    </div>
+  </div>
+  <a href="index.html" class="ah-demo-btn">▶ Watch Live Demo</a>
+</header>
+
+<!-- OVERVIEW STRIP -->
+<div id="overview">
+  <div class="ov-item"><span class="section-marker" style="background:rgba(188,140,255,0.15);color:var(--purple);border:1px solid rgba(188,140,255,0.3);">PRE</span></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">E</div><div class="ov-label">Enrich</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">S</div><div class="ov-label">Story</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-gate" title="Gate 0"></div><div class="ov-conn"></div></div>
+
+  <div class="ov-item"><span class="section-marker" style="background:rgba(245,130,30,0.12);color:var(--orange);border:1px solid rgba(245,130,30,0.3);">/generate-pr</span></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--blue)">0</div><div class="ov-label">Select</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--blue)">1</div><div class="ov-label">Reqs</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--orange)">2</div><div class="ov-label">Plan</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-gate" title="Gate 1"></div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--red)">3</div><div class="ov-label">Red</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--green)">4</div><div class="ov-label">Green</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-gate" title="Gate 2"></div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--yellow)">5</div><div class="ov-label">Gates</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--yellow)">6</div><div class="ov-label">PR</div><div class="ov-conn"></div></div>
+
+  <div class="ov-item"><span class="section-marker" style="background:rgba(121,192,255,0.12);color:var(--cyan);border:1px solid rgba(121,192,255,0.3);">/mm-ship</span></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--cyan)">7</div><div class="ov-label">Merge</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--cyan)">8</div><div class="ov-label">QA</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--cyan)">9</div><div class="ov-label">Runway</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-gate" title="Gate 3"></div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--green)">10</div><div class="ov-label">Prod</div><div class="ov-conn"></div></div>
+  <div class="ov-item"><div class="ov-dot" style="background:var(--purple)">11</div><div class="ov-label">Telemetry</div></div>
+</div>
+
+<!-- BODY -->
+<div class="arch-body">
+
+  <!-- ══ PRE-PHASE ══ -->
+  <div class="section-banner" style="background:rgba(188,140,255,0.07);border:1px solid rgba(188,140,255,0.2);" id="sec-pre">
+    <span class="sb-icon">🗂️</span>
+    <div>
+      <div class="sb-title" style="color:var(--purple)">Pre-Phase — PM Work</div>
+      <div class="sb-desc" style="color:var(--dim)">Runs before /generate-pr · handled by Product Manager via /mm-enrich and /mm-story</div>
+    </div>
+    <span class="sb-tag" style="background:rgba(188,140,255,0.1);color:var(--purple);border:1px solid rgba(188,140,255,0.25);">PM Team</span>
+  </div>
+
+  <div class="pre-row">
+    <div class="pre-card" style="transition-delay:.05s">
+      <div class="pre-num">Step 1</div>
+      <div class="pre-title">Knowledge Enrichment</div>
+      <div class="pre-cmd">/mm-enrich</div>
+      <div class="pre-desc">PM adds business rules, field definitions, decisions and retros from meetings into the shared Knowledge Base — grounding all future stories</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tag tag-who">PM</span>
+        <span class="tag tag-artifact">📚 Knowledge Base</span>
+      </div>
+    </div>
+    <div class="pre-card" style="transition-delay:.15s">
+      <div class="pre-num">Step 2</div>
+      <div class="pre-title">Story Creation + Review</div>
+      <div class="pre-cmd">/mm-story → Create + Review</div>
+      <div class="pre-desc">PM writes atomic story (≤2pts) with 11+ ACs, edge cases, AI Acceleration Strategy, and a Demo Gate. /mm-scoping-analyst validates all 6 Sr. PM checklist items</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tag tag-who">PM</span>
+        <span class="tag tag-agent">@mm-scoping-analyst</span>
+        <span class="tag tag-artifact">📄 Story spec</span>
+      </div>
+    </div>
+    <div class="pre-card" style="transition-delay:.25s">
+      <div class="pre-num">Step 3</div>
+      <div class="pre-title">Story Submission</div>
+      <div class="pre-cmd">/mm-story → Submit</div>
+      <div class="pre-desc">PM raises PR from story branch to main. Sr. PM reviews against the 6-point sign-off checklist and merges. Story is now locked and ready for engineering</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tag tag-who">PM → Sr. PM</span>
+        <span class="tag tag-artifact">🔀 PR → main</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 0 -->
+  <div class="gate-wrap" style="padding-left:0">
+    <div class="gate-card" style="border-left:4px solid var(--orange);">
+      <div class="gate-icon">🔒</div>
+      <div>
+        <div class="gate-title">Gate 0 — Story Merge to main</div>
+        <div class="gate-sub">Sr. PM 6-point checklist: "So What?" test · atomicity · vertical slice · AI readiness · no hidden context · Demo Gate defined</div>
+      </div>
+      <div class="gate-reviewers"><strong>Sr. PM</strong>Reviews + merges story PR</div>
+    </div>
+  </div>
+
+
+  <!-- ══ /generate-pr PIPELINE ══ -->
+  <div class="section-banner" style="background:rgba(245,130,30,0.07);border:1px solid rgba(245,130,30,0.2);" id="sec-gpr">
+    <span class="sb-icon">⚡</span>
+    <div>
+      <div class="sb-title" style="color:var(--orange)">/generate-pr — Agentic Implementation Pipeline</div>
+      <div class="sb-desc" style="color:var(--dim)">Developer runs one command · Claude Code orchestrates 6 phases with 2 human approval gates</div>
+    </div>
+    <span class="sb-tag" style="background:rgba(245,130,30,0.1);color:var(--orange);border:1px solid rgba(245,130,30,0.25);">Developer + Claude</span>
+  </div>
+
+  <div class="pipeline-track">
+
+    <!-- Phase 0 -->
+    <div class="phase-wrap" style="transition-delay:.0s">
+      <div class="phase-dot" style="background:var(--blue)">0</div>
+      <div class="phase-card" style="border-left-color:var(--blue)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--blue)">$ /generate-pr</span>
+          <div class="pc-title">Story Selection</div>
+        </div>
+        <div class="pc-desc">Branch detected automatically. EPIC-REGISTRY scanned for active stories. Pipeline state checked — resumes from last completed phase if work-in-progress.</div>
+        <div class="pc-meta">
+          <span class="tag tag-who">Developer</span>
+          <span class="tag" style="background:rgba(88,166,255,0.08);color:var(--blue);border:1px solid rgba(88,166,255,0.2);">Branch detection</span>
+          <span class="tag" style="background:rgba(88,166,255,0.08);color:var(--blue);border:1px solid rgba(88,166,255,0.2);">Resume support</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-wrap" style="transition-delay:.05s">
+      <div class="phase-dot" style="background:var(--blue)">1</div>
+      <div class="phase-card" style="border-left-color:var(--blue)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--blue)">Phase 1</span>
+          <div class="pc-title">Requirements Gate</div>
+        </div>
+        <div class="pc-desc">@mm-scoping-analyst reads story from main. Validates all 6 Sr. PM checklist items. Extracts ACs, edge cases, compliance flags, and golden test data. Hard-fails with GAP-REPORT.md on any missing criterion.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-scoping-analyst</span>
+          <span class="tag tag-artifact">✅ 11 ACs extracted</span>
+          <span class="tag tag-artifact">📋 GAP-REPORT.md on fail</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-wrap" style="transition-delay:.1s">
+      <div class="phase-dot" style="background:var(--orange)">2</div>
+      <div class="phase-card" style="border-left-color:var(--orange)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--orange)">Phase 2</span>
+          <div class="pc-title">Technical Blueprint</div>
+        </div>
+        <div class="pc-desc">@mm-codebase-planner reads SERVICE-KB.md from each affected service, traces call chains, resolves RESOLVE-IN-PLAN items by reading dynamo handler implementations. Generates PLAN.md with 3 sections: PM Business Scope, Technical Changes (with Mermaid sequence diagram), and QA Scenarios with p95 targets.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-codebase-planner</span>
+          <span class="tag tag-who">SERVICE-KB.md</span>
+          <span class="tag tag-artifact">📐 PLAN.md (3 sections)</span>
+          <span class="tag tag-artifact">↔ Sequence diagram</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gate 1 -->
+    <div class="gate-wrap">
+      <div class="gate-dot"></div>
+      <div class="gate-card">
+        <div class="gate-icon">🔒</div>
+        <div>
+          <div class="gate-title">Gate 1 — PLAN.md Approval</div>
+          <div class="gate-sub">Section 1 (PM Business Scope) reviewed by PM · Section 2 (Technical Changes) reviewed by Tech Lead · Both approvals required before any code is written</div>
+        </div>
+        <div class="gate-reviewers"><strong>PM + Tech Lead</strong>GitHub PR review</div>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-wrap" style="transition-delay:.0s">
+      <div class="phase-dot" style="background:var(--red)">3</div>
+      <div class="phase-card" style="border-left-color:var(--red)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--red)">Phase 3</span>
+          <div class="pc-title">TDD Red — Failing Tests</div>
+        </div>
+        <div class="pc-desc">@mm-test-architect reads PLAN.md Section 3 and writes all test scenarios as failing tests. Tests must fail against the current codebase — confirmed by running the test suite. Red phase commit locks the expected behaviour contract before implementation begins.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-test-architect</span>
+          <span class="tag tag-artifact" style="background:rgba(248,81,73,0.1);color:var(--red);border-color:rgba(248,81,73,0.2);">🔴 15 failing tests</span>
+          <span class="tag tag-artifact">test/customerPhoto.test.ts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-wrap" style="transition-delay:.05s">
+      <div class="phase-dot" style="background:var(--green)">4</div>
+      <div class="phase-card" style="border-left-color:var(--green)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--green)">Phase 4</span>
+          <div class="pc-title">TDD Green — Implementation</div>
+        </div>
+        <div class="pc-desc">@mm-implementer writes minimal production code chunk-by-chunk, running tests after each chunk. Checks function impact flags for PARTIAL-REUSE methods — surfaces callers in other services before any body changes. Stops after each chunk for approval. Only touches files in PLAN.md Section 2.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-implementer</span>
+          <span class="tag tag-artifact" style="background:rgba(63,185,80,0.1);color:var(--green);border-color:rgba(63,185,80,0.2);">🟢 15/15 tests pass</span>
+          <span class="tag tag-artifact">9 files changed</span>
+          <span class="tag tag-artifact">0 lint errors</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Function Impact Flag callout -->
+    <div class="phase-wrap" style="transition-delay:.08s">
+      <div class="phase-dot" style="background:var(--red);font-size:14px;left:-41px;">⚑</div>
+      <div class="phase-card" style="border-left-color:var(--red);background:rgba(248,81,73,0.04);">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--red);background:rgba(248,81,73,0.12);">Phase 4 · Impact Check</span>
+          <div class="pc-title" style="color:var(--red)">Function Impact Flag — Core Service Logic Change</div>
+        </div>
+        <div class="pc-desc" style="color:#C9D1D9;">
+          <strong style="color:var(--red)">Triggered only when an existing function body is modified</strong> — not when new functions are added.
+          A body change to a shared core function silently breaks every caller in other domain services.
+          This is the most dangerous category of change in a microservice architecture.
+        </div>
+        <div style="margin:10px 0 10px;background:var(--code-bg);border:1px solid rgba(248,81,73,0.25);border-radius:7px;padding:13px 16px;font-size:12px;">
+          <div style="color:var(--red);font-weight:700;margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Example from this session</div>
+          <div style="color:var(--text);margin-bottom:4px;"><strong>Function:</strong> <code style="background:rgba(0,0,0,0.4);padding:1px 6px;border-radius:3px;color:var(--cyan);">DocumentClientService.getPresignedUrl()</code></div>
+          <div style="color:var(--dim);margin-bottom:4px;"><strong style="color:var(--text)">Change type:</strong> <span style="color:var(--green)">New method added (PARTIAL-REUSE)</span> — no body changes to existing methods</div>
+          <div style="color:var(--dim);margin-bottom:4px;"><strong style="color:var(--text)">Callers found:</strong> Only <code style="background:rgba(0,0,0,0.4);padding:1px 5px;border-radius:3px;color:var(--blue);">CustomerPhotoService</code> (new caller) · existing callers untouched</div>
+          <div style="color:var(--green);margin-top:6px;font-size:11px;">✓ No flag raised — adding a new method does not affect existing callers</div>
+        </div>
+        <div style="background:var(--code-bg);border:1px solid rgba(248,81,73,0.2);border-radius:7px;padding:13px 16px;font-size:12px;margin-bottom:8px;">
+          <div style="color:var(--red);font-weight:700;margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">When the flag WOULD fire</div>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 14px;align-items:start;">
+            <div style="color:var(--dim);font-size:11px;">Trigger</div>
+            <div>Existing function body in a Core/Shared service is modified — e.g. <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;color:var(--cyan);">DynamoService.makeDynamoDBRequest()</code> body changes</div>
+            <div style="color:var(--dim);font-size:11px;">Agent traces</div>
+            <div>Greps all domain services for every call to the changed function — finds every <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;color:var(--cyan);">.makeDynamoDBRequest()</code> invocation across customer-service, application-service, artifact-service etc.</div>
+            <div style="color:var(--dim);font-size:11px;">Flag shows</div>
+            <div style="color:var(--text);">Function name · Core service · List of all calling services at risk · Nature of the logic change</div>
+            <div style="color:var(--dim);font-size:11px;">Blocks</div>
+            <div style="color:var(--red);">Implementation proceeds <strong>only</strong> after engineer reviews each calling service and confirms no breakage — or chooses to add a new function instead</div>
+          </div>
+        </div>
+        <div class="pc-meta">
+          <span class="tag" style="background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.25);">⚑ Impact flag</span>
+          <span class="tag" style="background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.25);">PARTIAL-REUSE only</span>
+          <span class="tag tag-agent">@mm-implementer</span>
+          <span class="tag" style="background:rgba(63,185,80,0.08);color:var(--green);border:1px solid rgba(63,185,80,0.2);">Silent-break prevention</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gate 2 -->
+    <div class="gate-wrap">
+      <div class="gate-dot"></div>
+      <div class="gate-card">
+        <div class="gate-icon">🔒</div>
+        <div>
+          <div class="gate-title">Gate 2 — Implementation Review</div>
+          <div class="gate-sub">Eligible reviewer cannot be the author. All function impact flags must be reviewed. 15/15 tests passing required. This gate blocks PR creation.</div>
+        </div>
+        <div class="gate-reviewers"><strong>Tech Lead / Peer Dev</strong>Cannot self-approve</div>
+      </div>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase-wrap" style="transition-delay:.0s">
+      <div class="phase-dot" style="background:var(--yellow)">5</div>
+      <div class="phase-card" style="border-left-color:var(--yellow)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--yellow)">Phase 5</span>
+          <div class="pc-title">Quality Gates</div>
+        </div>
+        <div class="pc-desc">@mm-qa-gatekeeper runs full local quality suite: all tests, lint (only if script exists in package.json), coverage, and performance estimate. Any failure is a hard block — surfaces root cause immediately. On all-green, writes BUILD-EVIDENCE.md to the monorepo as structured proof.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-qa-gatekeeper</span>
+          <span class="tag tag-artifact">📋 BUILD-EVIDENCE.md</span>
+          <span class="tag tag-artifact">Coverage report</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 6 -->
+    <div class="phase-wrap" style="transition-delay:.05s">
+      <div class="phase-dot" style="background:var(--yellow)">6</div>
+      <div class="phase-card" style="border-left-color:var(--yellow)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--yellow)">Phase 6</span>
+          <div class="pc-title">PR Assembly</div>
+        </div>
+        <div class="pc-desc">8-point sign-off verified: PLAN.md + sequence diagram + service bindings + all tests green + no skipped tests + function impact reviewed + BUILD-EVIDENCE.md + QA-EVIDENCE.md. All 8 green → PRs created with reviewers assigned from personas.md. Slack notification offered.</div>
+        <div class="pc-meta">
+          <span class="tag tag-who">Developer</span>
+          <span class="tag tag-artifact">🔀 PR #380 customer-service</span>
+          <span class="tag tag-artifact">🔀 PR #763 document-service</span>
+          <span class="tag tag-artifact">8-point sign-off</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pipeline-track -->
+
+
+  <!-- ══ POST-PHASE ══ -->
+  <div class="section-banner" style="background:rgba(121,192,255,0.07);border:1px solid rgba(121,192,255,0.2);margin-top:40px;" id="sec-ship">
+    <span class="sb-icon">🚀</span>
+    <div>
+      <div class="sb-title" style="color:var(--cyan)">/mm-ship + /mm-telemetry — Environment Promotion</div>
+      <div class="sb-desc" style="color:var(--dim)">After Gate 2 clears and PRs merge · QA → Runway → Production · automated gating at every step</div>
+    </div>
+    <span class="sb-tag" style="background:rgba(121,192,255,0.1);color:var(--cyan);border:1px solid rgba(121,192,255,0.25);">Dev + QA + TL + VP</span>
+  </div>
+
+  <div class="pipeline-track">
+
+    <!-- Phase 7 -->
+    <div class="phase-wrap" style="transition-delay:.0s">
+      <div class="phase-dot" style="background:var(--cyan)">7</div>
+      <div class="phase-card" style="border-left-color:var(--cyan)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--cyan)">Gate 2 cleared</span>
+          <div class="pc-title">PRs Merged to preprod</div>
+        </div>
+        <div class="pc-desc">Tech Lead + Tech VP review and approve both PRs. document-service PR merges first (no breaking changes), then customer-service PR. Branch feat/MM-Epic-1_CustomerPhotoAPI is now live on preprod.</div>
+        <div class="pc-meta">
+          <span class="tag tag-who">Tech Lead + Tech VP</span>
+          <span class="tag tag-artifact">✅ Merged to preprod</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 8 -->
+    <div class="phase-wrap" style="transition-delay:.05s">
+      <div class="phase-dot" style="background:var(--cyan)">8</div>
+      <div class="phase-card" style="border-left-color:var(--cyan)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--cyan)">/mm-ship --qa</span>
+          <div class="pc-title">QA Environment</div>
+        </div>
+        <div class="pc-desc">@mm-qa-gatekeeper deploys to qa-mm environment. Runs full suite: unit tests (15/15), integration tests against live dynamo-svc and document-service using golden data from PLAN.md Section 3, regression tests on 4 existing endpoints, and p95 latency (287ms vs &lt;3000ms target). Any failure hard-blocks with root cause. All green → writes QA-EVIDENCE.md.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-qa-gatekeeper</span>
+          <span class="tag tag-artifact">📋 QA-EVIDENCE.md</span>
+          <span class="tag tag-artifact">p95 287ms ✓</span>
+          <span class="tag tag-artifact">4 regression ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 9 -->
+    <div class="phase-wrap" style="transition-delay:.1s">
+      <div class="phase-dot" style="background:var(--cyan)">9</div>
+      <div class="phase-card" style="border-left-color:var(--cyan)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--cyan)">/mm-ship --runway</span>
+          <div class="pc-title">Runway Environment</div>
+        </div>
+        <div class="pc-desc">Promoted from qa-mm. @mm-qa-gatekeeper runs smoke tests and p95 latency (279ms). Tech Lead reviews QA-EVIDENCE.md and signs off. Runway gate requires explicit Tech Lead approval — never auto-proceeds.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-qa-gatekeeper</span>
+          <span class="tag tag-who">Tech Lead sign-off</span>
+          <span class="tag tag-artifact">p95 279ms ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gate 3 -->
+    <div class="gate-wrap">
+      <div class="gate-dot"></div>
+      <div class="gate-card">
+        <div class="gate-icon">🔒</div>
+        <div>
+          <div class="gate-title">Gate 3 — Production Sign-off</div>
+          <div class="gate-sub">Tech VP reviews all evidence (BUILD-EVIDENCE + QA-EVIDENCE) and approves production promotion. Both Runway gates (QA gate + TL sign-off) must be confirmed first.</div>
+        </div>
+        <div class="gate-reviewers"><strong>Tech VP</strong>Final prod gate</div>
+      </div>
+    </div>
+
+    <!-- Phase 10 -->
+    <div class="phase-wrap" style="transition-delay:.0s">
+      <div class="phase-dot" style="background:var(--green)">10</div>
+      <div class="phase-card" style="border-left-color:var(--green)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--green)">/mm-ship --prod</span>
+          <div class="pc-title">Production</div>
+        </div>
+        <div class="pc-desc">Story promoted to production after Tech VP gate clears. PR from runway → prod branch raised and merged. Linear story status updated to Shipped. This is the final environment promotion.</div>
+        <div class="pc-meta">
+          <span class="tag tag-who">Tech VP</span>
+          <span class="tag tag-artifact" style="background:rgba(63,185,80,0.1);color:var(--green);border-color:rgba(63,185,80,0.2);">🌐 Live in production</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 11 -->
+    <div class="phase-wrap" style="transition-delay:.05s">
+      <div class="phase-dot" style="background:var(--purple)">11</div>
+      <div class="phase-card" style="border-left-color:var(--purple)">
+        <div class="pc-top">
+          <span class="pc-cmd" style="color:var(--purple)">/mm-telemetry</span>
+          <div class="pc-title">Telemetry — Phase 8</div>
+        </div>
+        <div class="pc-desc">@mm-release-herald composes a concise, stakeholder-appropriate Slack post with key metrics (tests, p95, PRs, owner). Sent to #mm-pod after human approval. Metrics dashboard updated. Services with code changes flagged for SERVICE-KB.md delta update. EPIC-REGISTRY.md updated to Shipped.</div>
+        <div class="pc-meta">
+          <span class="tag tag-agent">@mm-release-herald</span>
+          <span class="tag tag-artifact">📢 #mm-pod Slack</span>
+          <span class="tag tag-artifact">📊 Dashboard</span>
+          <span class="tag tag-artifact">🔄 KB refresh</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pipeline-track -->
+
+
+  <!-- COMPLETION -->
+  <div class="completion" id="completion">
+    <div class="comp-icon">🎉</div>
+    <div class="comp-title">Story Shipped to Production</div>
+    <div class="comp-sub">MM-Epic-1-Story-1A · Customer Photo API · mCollect integration live</div>
+    <div class="comp-stats">
+      <div class="cs-item"><div class="cs-val">11</div><div class="cs-lbl">Phases (0→11)</div></div>
+      <div class="cs-item"><div class="cs-val">3</div><div class="cs-lbl">Human gates</div></div>
+      <div class="cs-item"><div class="cs-val">6</div><div class="cs-lbl">Subagents used</div></div>
+      <div class="cs-item"><div class="cs-val" style="color:var(--green)">15/15</div><div class="cs-lbl">Tests green</div></div>
+      <div class="cs-item"><div class="cs-val" style="color:var(--green)">287ms</div><div class="cs-lbl">p95 in QA</div></div>
+      <div class="cs-item"><div class="cs-val" style="color:var(--blue)">2</div><div class="cs-lbl">PRs merged</div></div>
+    </div>
+  </div>
+
+  <!-- SUBAGENTS KEY -->
+  <div style="margin-top:40px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:14px;">Subagents Used in This Pipeline</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--blue)">@mm-scoping-analyst</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phase 1 · Validates story against Sr. PM 6-point checklist · Produces GAP-REPORT on fail</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--orange)">@mm-codebase-planner</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phase 2 · Reads SERVICE-KB.md, traces call chains, maps reuse, generates PLAN.md</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--red)">@mm-test-architect</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phase 3 · Writes failing tests from PLAN.md Section 3 · Confirms Red phase</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--green)">@mm-implementer</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phase 4 · Writes minimal code chunk-by-chunk · Checks function impact · Stops for approval</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--yellow)">@mm-qa-gatekeeper</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phases 5, 8, 9 · Runs quality gates · Measures p95 · Writes BUILD-EVIDENCE + QA-EVIDENCE</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">
+        <div style="font-size:12px;font-weight:700;color:var(--purple)">@mm-release-herald</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Phase 11 · Composes Slack success post · Updates dashboard · Flags SERVICE-KB refresh</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /arch-body -->
+
+<script>
+// Scroll-triggered animations via IntersectionObserver
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      // stagger children within section banners and pre-row
+      const el = entry.target;
+      setTimeout(() => el.classList.add('visible'), 0);
+      observer.unobserve(el);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.phase-wrap, .gate-wrap, .pre-card, .completion').forEach(el => {
+  observer.observe(el);
+});
+
+// Highlight overview dot for current section
+const sections = [
+  { id: 'sec-pre',  index: 1 },
+  { id: 'sec-gpr',  index: 4 },
+  { id: 'sec-ship', index: 16 },
+];
+</script>
+</body>
+</html>
